@@ -1,0 +1,27 @@
+{
+  "name": "זבאנג רויאל",
+  "short_name": "זבאנג",
+  "description": "משחק מילים בעברית - מצא כמה שיותר מילים ב-60 שניות!",
+  "dir": "rtl",
+  "lang": "he",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f1419",
+  "background_color": "#0f1419",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

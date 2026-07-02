@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f1419">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="זבאנג">
+    <title>זבאנג רויאל</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="game.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <div class="home-content">
+                <h1 class="main-title">זבאנג רויאל</h1>
+                <p class="subtitle">משחק מילים בעברית</p>
+
+                <div class="player-card">
+                    <div class="player-header">
+                        <div class="player-avatar" id="homeAvatar">👤</div>
+                        <div class="player-info">
+                            <p class="player-name" id="playerName">שחקן</p>
+                            <div class="level-badge" id="levelBadge">רמה 1</div>
+                        </div>
+                    </div>
+                    <div class="coins-display">
+                        <span class="coin-icon">🪙</span>
+                        <span class="coin-amount" id="homeCoins">100</span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="mega-btn blue-btn" onclick="showGameModeSelection()">
+                        ▶️ משחק
+                    </button>
+                    <button class="mega-btn orange-btn" onclick="goToShop()">
+                        🛍️ חנות
+                    </button>
+                    <button class="mega-btn green-btn" onclick="goToProfile()">
+                        👤 פרופיל
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Mode Selection -->
+        <div id="gameModeScreen" class="screen">
+            <div class="modal-content">
+                <h2>בחר מצב משחק</h2>
+
+                <div class="mode-option" onclick="startSinglePlayer()">
+                    <div class="mode-icon">👤</div>
+                    <div class="mode-details">
+                        <h3>משחקן יחיד</h3>
+                        <p>משחק אישי נגד הזמן - 60 שניות</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <div class="mode-option" onclick="startBattleRoyale()">
+                    <div class="mode-icon">⚔️</div>
+                    <div class="mode-details">
+                        <h3>באטל רויאל</h3>
+                        <p>5 סיבובים נגד 4 בוטים - הודח בכל סיבוב</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <button class="close-modal-btn" onclick="goHome()">חזור</button>
+            </div>
+        </div>
+
+        <!-- Single Player Game -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <button class="exit-btn" onclick="goHome()">🏠</button>
+                <div class="timer-display" id="timerDisplay">60</div>
+                <div class="score-display" id="scoreDisplay">0</div>
+            </div>
+
+            <div class="board" id="board"></div>
+
+            <div class="current-word-display" id="currentWordDisplay"></div>
+
+            <div class="power-ups-row">
+                <button class="power-up-btn" id="hintBtn" onclick="useHint()" title="רמז">💡<span class="pu-cost">20</span></button>
+                <button class="power-up-btn" id="shuffleBtn" onclick="useShuffle()" title="ערבב">🔀<span class="pu-cost">10</span></button>
+                <button class="power-up-btn" id="freezeBtn" onclick="useFreeze()" title="הקפא">❄️<span class="pu-cost">30</span></button>
+            </div>
+
+            <div class="found-words">
+                <h3>מילים שנמצאו:</h3>
+                <ul id="foundWordsList"></ul>
+            </div>
+        </div>
+
+        <!-- Battle Royale Game -->
+        <div id="battleScreen" class="screen">
+            <div class="battle-header">
+                <button class="exit-btn" onclick="goHome()">🏠</button>
+                <div class="round-badge" id="roundBadge">סיבוב 1/5</div>
+                <div class="timer-display" id="battleTimerDisplay">60</div>
+            </div>
+
+            <div class="players-status" id="playersStatus"></div>
+
+            <div class="board" id="battleBoard"></div>
+
+            <div class="current-word-display" id="battleWordDisplay"></div>
+
+            <div class="power-ups-row">
+                <button class="power-up-btn" onclick="useBattleFreeze()" title="הקפא יריבים">❄️<span class="pu-cost">40</span></button>
+                <button class="power-up-btn" onclick="useBattleShuffle()" title="ערבב ליריבים">🌪️<span class="pu-cost">25</span></button>
+            </div>
+
+            <div class="player-score">
+                <p>הניקוד שלך: <span id="playerBattleScore">0</span></p>
+            </div>
+        </div>
+
+        <!-- Single Player Result Screen -->
+        <div id="singleResultScreen" class="screen">
+            <div class="result-modal">
+                <h2>⏱️ הזמן נגמר!</h2>
+                <p class="final-score">ניקוד: <span id="srScore">0</span></p>
+                <div class="result-stats">
+                    <p>מילים שנמצאו: <span id="srWords">0</span></p>
+                </div>
+                <div class="reward-box">
+                    <span class="coin-icon">🪙</span>
+                    <span id="srCoins">+0 מטבעות</span>
+                </div>
+                <button class="btn-large blue-btn" onclick="startSinglePlayer()">🔄 שחק שוב</button>
+                <button class="btn-large purple-btn" onclick="goHome()">🏠 מסך הבית</button>
+            </div>
+        </div>
+
+        <!-- Round End Screen (Battle) -->
+        <div id="roundEndScreen" class="screen">
+            <div class="result-modal">
+                <h2>סיום סיבוב</h2>
+                <div class="standings" id="standingsDisplay"></div>
+                <div class="reward-box">
+                    <span class="coin-icon">🪙</span>
+                    <span>+25 מטבעות</span>
+                </div>
+                <button class="btn-large" onclick="nextBattleRound()">סיבוב הבא ›</button>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victoryScreen" class="screen">
+            <div class="victory-modal">
+                <h1>🎉 ניצחת! 🎉</h1>
+                <p>שרדת את כל 5 הסיבובים!</p>
+                <div class="victory-rewards" id="victoryRewards"></div>
+                <button class="btn-large blue-btn" onclick="goHome()">🏠 מסך הבית</button>
+            </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shopScreen" class="screen">
+            <div class="shop-container">
+                <button class="exit-btn" onclick="goHome()">🏠</button>
+                <h2>🛍️ חנות</h2>
+                <div class="shop-coins">
+                    <span class="coin-icon">🪙</span>
+                    <span id="shopCoins">100</span>
+                </div>
+                <div class="shop-items" id="shopItems"></div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div id="profileScreen" class="screen">
+            <div class="profile-container">
+                <button class="exit-btn" onclick="goHome()">🏠</button>
+                <h2>👤 הפרופיל שלך</h2>
+
+                <div class="profile-avatar-section">
+                    <div class="current-avatar" id="currentAvatar"></div>
+                    <p class="avatar-section-title">בחר דמות:</p>
+                    <div class="avatar-grid" id="avatarGrid"></div>
+                </div>
+
+                <div class="profile-stats" id="profileStats"></div>
+
+                <div class="submissions-section">
+                    <h3>📤 מילים שנשלחו לבדיקה</h3>
+                    <div id="submissionsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="avatars.js"></script>
+    <script src="game.js"></script>
+    <script>
+        // Register service worker for offline play & installability
+        // (skipped on file:// - works when served over http/https)
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
