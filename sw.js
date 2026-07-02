@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zabang-royal-v2';
+const CACHE_NAME = 'zabang-royal-v3';
 
 const ASSETS = [
     './',
@@ -7,6 +7,7 @@ const ASSETS = [
     './game.css',
     './game.js',
     './avatars.js',
+    './icons.js',
     './manifest.json',
     './icon-192.png',
     './icon-512.png',

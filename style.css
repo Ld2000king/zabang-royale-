@@ -1,4 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800;900&family=Poppins:wght@300;400;600;700;800&display=swap');
+
+:root {
+    /* Neon core palette */
+    --neon-cyan: #00e5ff;
+    --neon-cyan-deep: #00a3ff;
+    --neon-pink: #ff2ec4;
+    --neon-magenta: #d400ff;
+    --neon-lime: #39ff6a;
+    --neon-lime-deep: #12c96b;
+    --neon-orange: #ff7a1a;
+    --neon-orange-deep: #ff9f00;
+    --neon-gold: #ffd60a;
+    --neon-gold-deep: #ffb700;
+    --neon-purple: #8b5cf6;
+    --neon-purple-deep: #6d28d9;
+    --neon-red: #ff3b5c;
+    --neon-red-deep: #d90429;
+
+    /* Gradients (glossy arcade buttons) */
+    --grad-blue: linear-gradient(135deg, var(--neon-cyan), var(--neon-cyan-deep));
+    --grad-green: linear-gradient(135deg, var(--neon-lime), var(--neon-lime-deep));
+    --grad-orange: linear-gradient(135deg, var(--neon-orange-deep), var(--neon-orange));
+    --grad-gold: linear-gradient(135deg, var(--neon-gold), var(--neon-gold-deep));
+    --grad-purple: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-deep));
+    --grad-pink: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
+    --grad-red: linear-gradient(135deg, var(--neon-red), var(--neon-red-deep));
+
+    /* Glossy highlight overlay (top sheen) layered on buttons/tiles */
+    --gloss-overlay: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 45%);
+
+    /* Backgrounds */
+    --bg-deep: #0a0e17;
+    --bg-deep-2: #141a2e;
+    --panel-light: rgba(255, 255, 255, 0.96);
+
+    /* Text */
+    --text-dark: #14162b;
+    --text-light: #ffffff;
+
+    /* Glow shadows - the "arcade" signature */
+    --glow-cyan: 0 0 8px rgba(0,229,255,.8), 0 0 24px rgba(0,229,255,.5), 0 8px 24px rgba(0,163,255,.35);
+    --glow-green: 0 0 8px rgba(57,255,106,.8), 0 0 24px rgba(57,255,106,.5), 0 8px 24px rgba(18,201,107,.35);
+    --glow-orange: 0 0 8px rgba(255,159,0,.8), 0 0 24px rgba(255,122,26,.5), 0 8px 24px rgba(255,122,26,.35);
+    --glow-gold: 0 0 8px rgba(255,214,10,.8), 0 0 24px rgba(255,183,0,.5), 0 8px 24px rgba(255,183,0,.35);
+    --glow-purple: 0 0 8px rgba(139,92,246,.8), 0 0 24px rgba(109,40,217,.5), 0 8px 24px rgba(109,40,217,.35);
+    --glow-red: 0 0 8px rgba(255,59,92,.8), 0 0 24px rgba(217,4,41,.5), 0 8px 24px rgba(217,4,41,.35);
+
+    /* Borders and radii */
+    --border-thick: 3px;
+    --radius-card: 28px;
+    --radius-btn: 16px;
+    --radius-tile: 14px;
+
+    /* Fonts */
+    --font-display: 'Rubik', 'Poppins', sans-serif;
+    --font-body: 'Poppins', sans-serif;
+}
 
 * {
     margin: 0;
@@ -11,8 +68,8 @@ html, body {
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+    font-family: var(--font-body);
+    background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-deep-2) 100%);
     min-height: 100vh;
     min-height: 100dvh;
     color: #fff;
@@ -25,6 +82,16 @@ body {
 
 /* Remove the 300ms tap delay and double-tap zoom on all controls */
 button {
+    touch-action: manipulation;
+}
+
+/* Same fix for clickable divs (mode-option, shop-item, avatar-option) -
+   without this, mobile browsers can double-tap-zoom or ghost-click these,
+   firing their onclick handler more than once per tap */
+.mode-option,
+.shop-item,
+.avatar-option,
+.standing {
     touch-action: manipulation;
 }
 
@@ -445,4 +512,18 @@ button {
     .game-header {
         font-size: 1.2em;
     }
+}
+
+/* Inline SVG icon wrapper - replaces emoji, scales with font-size */
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.icon svg {
+    width: 1em;
+    height: 1em;
+    display: block;
 }

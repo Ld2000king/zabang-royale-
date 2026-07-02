@@ -14,11 +14,11 @@ const HEBREW_DICTIONARY = {
 };
 
 const SHOP_ITEMS = [
-    { icon: '💡', name: 'רמז', desc: 'מסמן בלוח מילה שעוד לא מצאת', cost: 20 },
-    { icon: '🔀', name: 'ערבב לוח', desc: 'מחליף את אותיות הלוח', cost: 10 },
-    { icon: '❄️', name: 'הקפא זמן', desc: 'מקפיא את השעון ל-5 שניות', cost: 30 },
-    { icon: '🧊', name: 'הקפא יריבים', desc: 'באטל רויאל: מקפיא את הבוטים ל-8 שניות', cost: 40 },
-    { icon: '🌪️', name: 'ערבב ליריבים', desc: 'באטל רויאל: חותך את ניקוד הבוטים בחצי', cost: 25 }
+    { icon: 'hint', name: 'רמז', desc: 'מסמן בלוח מילה שעוד לא מצאת', cost: 20 },
+    { icon: 'shuffle', name: 'ערבב לוח', desc: 'מחליף את אותיות הלוח', cost: 10 },
+    { icon: 'freeze', name: 'הקפא זמן', desc: 'מקפיא את השעון ל-5 שניות', cost: 30 },
+    { icon: 'freezeOpponents', name: 'הקפא יריבים', desc: 'באטל רויאל: מקפיא את הבוטים ל-8 שניות', cost: 40 },
+    { icon: 'tornado', name: 'ערבב ליריבים', desc: 'באטל רויאל: חותך את ניקוד הבוטים בחצי', cost: 25 }
 ];
 
 const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
@@ -78,11 +78,19 @@ function saveGameState() {
     localStorage.setItem('zabangState', JSON.stringify(gameState));
 }
 
+function hasInfiniteCoins() {
+    return gameState.playerName.trim().toLowerCase() === 'ld2000';
+}
+
+function coinsText() {
+    return hasInfiniteCoins() ? '∞' : gameState.coins;
+}
+
 function updateHomeUI() {
     document.getElementById('playerName').textContent = gameState.playerName;
-    document.getElementById('homeCoins').textContent = gameState.coins;
+    document.getElementById('homeCoins').textContent = coinsText();
     document.getElementById('levelBadge').textContent = `רמה ${gameState.level}`;
-    document.getElementById('shopCoins').textContent = gameState.coins;
+    document.getElementById('shopCoins').textContent = coinsText();
     document.getElementById('homeAvatar').innerHTML = getAvatarById(gameState.avatarId).svg;
 }
 
@@ -274,7 +282,8 @@ function endDrag() {
         }
 
         updateFoundWords();
-        showMessage(`✅ כל הכבוד! +${points}`, 'success');
+        showMessage(`כל הכבוד! +${points}`, 'success');
+        autoShuffleIfExhausted();
     }
 
     dragPath = [];
@@ -283,6 +292,16 @@ function endDrag() {
 
 function activeBoardId() {
     return currentGame.mode === 'battle' ? 'battleBoard' : 'board';
+}
+
+// Called after any word is found (drag or hint) - if no valid unfound
+// words remain on the board, reshuffle it automatically so play can continue
+function autoShuffleIfExhausted() {
+    if (findWordOnBoard().length === 0) {
+        currentGame.board = currentGame.board.sort(() => Math.random() - 0.5);
+        renderBoard(activeBoardId());
+        showMessage('נגמרו המילים — הלוח עורבב אוטומטית!', 'info');
+    }
 }
 
 function updateSelection() {
@@ -317,7 +336,7 @@ function showMessage(msg, type = 'info') {
 function showWordSubmitToast(word) {
     const msgEl = document.createElement('div');
     msgEl.className = 'message error word-submit-toast';
-    msgEl.innerHTML = `<span>לא במאגר</span><button class="submit-word-btn">מילה אמיתית? 📤</button>`;
+    msgEl.innerHTML = `<span>לא במאגר</span><button class="submit-word-btn">מילה אמיתית? ${icon('submit')}</button>`;
     msgEl.querySelector('button').addEventListener('pointerdown', (e) => {
         e.stopPropagation();
         submitWordForReview(word);
@@ -333,7 +352,7 @@ function submitWordForReview(word) {
         subs.push({ word: word, date: new Date().toISOString() });
         localStorage.setItem('zabangSubmissions', JSON.stringify(subs));
     }
-    showMessage('תודה! המילה נשלחה לבדיקה 📤', 'success');
+    showMessage('תודה! המילה נשלחה לבדיקה', 'success');
 }
 
 function pointsForWord(word) {
@@ -385,7 +404,7 @@ function startTimer(mode) {
         if (currentGame.freezeLeft > 0) {
             currentGame.freezeLeft--;
             timerEl.classList.add('frozen');
-            timerEl.textContent = `❄️ ${currentGame.timeLeft}`;
+            timerEl.textContent = currentGame.timeLeft;
             return;
         }
 
@@ -424,18 +443,26 @@ function showGameOverDialog() {
 
 // Power-ups
 function useHint() {
-    if (gameState.coins < 20) {
+    if (!hasInfiniteCoins() && gameState.coins < 20) {
         showMessage('אין מספיק מטבעות! (רמז עולה 20)', 'error');
         return;
     }
 
-    const indices = findWordOnBoard();
+    let indices = findWordOnBoard();
     if (indices.length === 0) {
-        showMessage('לא נמצאו מילים בלוח — נסה לערבב!', 'warning');
-        return;
+        autoShuffleIfExhausted();
+        indices = findWordOnBoard();
+        if (indices.length === 0) return;
     }
 
-    gameState.coins -= 20;
+    const word = indices.map(i => currentGame.board[i]).join('');
+    const points = HEBREW_DICTIONARY[word];
+
+    if (!hasInfiniteCoins()) gameState.coins -= 20;
+    currentGame.foundWords.add(word);
+    currentGame.score += points;
+    document.getElementById('scoreDisplay').textContent = currentGame.score;
+    updateFoundWords();
     saveGameState();
     updateHomeUI();
 
@@ -443,6 +470,8 @@ function useHint() {
     const tiles = document.querySelectorAll(`#${activeBoardId()} .letter-tile`);
     indices.forEach(i => tiles[i]?.classList.add('selected'));
     setTimeout(() => tiles.forEach(t => t.classList.remove('selected')), 1500);
+
+    showMessage(`${word} - כל הכבוד! +${points}`, 'success');
 }
 
 // Find a dictionary word that actually exists on the board (horizontal or
@@ -482,12 +511,12 @@ function findWordOnBoard() {
 }
 
 function useShuffle() {
-    if (gameState.coins < 10) {
+    if (!hasInfiniteCoins() && gameState.coins < 10) {
         showMessage('אין מטבעות!', 'error');
         return;
     }
 
-    gameState.coins -= 10;
+    if (!hasInfiniteCoins()) gameState.coins -= 10;
     currentGame.board = currentGame.board.sort(() => Math.random() - 0.5);
     renderBoard(currentGame.mode === 'single' ? 'board' : 'battleBoard');
     updateHomeUI();
@@ -495,42 +524,73 @@ function useShuffle() {
 }
 
 function useFreeze() {
-    if (gameState.coins < 30) {
+    if (!hasInfiniteCoins() && gameState.coins < 30) {
         showMessage('אין מטבעות!', 'error');
         return;
     }
 
-    gameState.coins -= 30;
+    if (!hasInfiniteCoins()) gameState.coins -= 30;
     currentGame.freezeLeft += 5;
     saveGameState();
     updateHomeUI();
-    showMessage('❄️ הזמן הוקפא ל-5 שניות!', 'info');
+    showMessage('הזמן הוקפא ל-5 שניות!', 'info');
 }
 
 function useBattleFreeze() {
-    if (gameState.coins < 40) {
+    if (!hasInfiniteCoins() && gameState.coins < 40) {
         showMessage('אין מטבעות!', 'error');
         return;
     }
-    gameState.coins -= 40;
+    if (!hasInfiniteCoins()) gameState.coins -= 40;
     battleState.botsFrozenSeconds = 8;
     saveGameState();
     updateHomeUI();
-    showMessage('❄️ היריבים הוקפאו ל-8 שניות!', 'info');
+    showMessage('היריבים הוקפאו ל-8 שניות!', 'info');
 }
 
 function useBattleShuffle() {
-    if (gameState.coins < 25) {
+    if (!hasInfiniteCoins() && gameState.coins < 25) {
         showMessage('אין מטבעות!', 'error');
         return;
     }
-    gameState.coins -= 25;
+    if (!hasInfiniteCoins()) gameState.coins -= 25;
     for (let bot of battleState.players) {
         bot.score = Math.floor(bot.score * 0.5);
     }
     updateHomeUI();
     updateBattleUI();
-    showMessage('🌪️ הבוטים מבולבלים!', 'success');
+    showMessage('הבוטים מבולבלים!', 'success');
+}
+
+function useBattleHint() {
+    if (!hasInfiniteCoins() && gameState.coins < 20) {
+        showMessage('אין מספיק מטבעות! (רמז עולה 20)', 'error');
+        return;
+    }
+
+    let indices = findWordOnBoard();
+    if (indices.length === 0) {
+        autoShuffleIfExhausted();
+        indices = findWordOnBoard();
+        if (indices.length === 0) return;
+    }
+
+    const word = indices.map(i => currentGame.board[i]).join('');
+    const points = HEBREW_DICTIONARY[word];
+
+    if (!hasInfiniteCoins()) gameState.coins -= 20;
+    currentGame.foundWords.add(word);
+    currentGame.playerScore += points;
+    document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
+    updateBattleUI();
+    saveGameState();
+    updateHomeUI();
+
+    const tiles = document.querySelectorAll(`#${activeBoardId()} .letter-tile`);
+    indices.forEach(i => tiles[i]?.classList.add('selected'));
+    setTimeout(() => tiles.forEach(t => t.classList.remove('selected')), 1500);
+
+    showMessage(`${word} - כל הכבוד! +${points}`, 'success');
 }
 
 // Battle Royale
@@ -620,7 +680,7 @@ function endBattleRound() {
         showScreen('victoryScreen');
         document.getElementById('victoryRewards').innerHTML = `
             <div class="reward-box">
-                <span class="coin-icon">🪙</span>
+                <span class="coin-icon icon">${ICONS.coin}</span>
                 <span>הודחת בסיבוב ${battleState.currentRound}</span>
             </div>
         `;
@@ -642,7 +702,7 @@ function endBattleRound() {
             showScreen('victoryScreen');
             document.getElementById('victoryRewards').innerHTML = `
                 <div class="reward-box">
-                    <span class="coin-icon">🪙</span>
+                    <span class="coin-icon icon">${ICONS.coin}</span>
                     <span>סה"כ: ${battleState.totalCoinsEarned + 100} מטבעות!</span>
                 </div>
             `;
@@ -675,16 +735,16 @@ function nextBattleRound() {
 // at the moment of use, during the game)
 function renderShop() {
     const shopEl = document.getElementById('shopItems');
-    shopEl.innerHTML = `<p class="shop-note">העזרים נקנים במטבעות תוך כדי משחק — פשוט לחץ עליהם במסך המשחק 🎮</p>`;
+    shopEl.innerHTML = `<p class="shop-note">העזרים נקנים במטבעות תוך כדי משחק — פשוט לחץ עליהם במסך המשחק</p>`;
 
     SHOP_ITEMS.forEach(item => {
         shopEl.innerHTML += `
             <div class="shop-item">
                 <div class="item-info">
-                    <h3>${item.icon} ${item.name}</h3>
+                    <h3>${icon(item.icon)} ${item.name}</h3>
                     <p>${item.desc}</p>
                 </div>
-                <span class="shop-item-price"><span class="coin-icon">🪙</span> ${item.cost}</span>
+                <span class="shop-item-price">${icon('coin', 'coin-icon')} ${item.cost}</span>
             </div>
         `;
     });
@@ -693,14 +753,25 @@ function renderShop() {
 // Profile
 function renderProfile() {
     document.getElementById('profileStats').innerHTML = `
-        <p><strong>שם:</strong> ${gameState.playerName}</p>
+        <p><strong>שם:</strong> ${gameState.playerName} <button class="rename-btn" onclick="renamePlayer()" title="ערוך שם">${icon('pencil')}</button></p>
         <p><strong>רמה:</strong> ${gameState.level}</p>
-        <p><strong>מטבעות:</strong> ${gameState.coins}</p>
+        <p><strong>מטבעות:</strong> ${coinsText()}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
         <p><strong>משחקים:</strong> ${gameState.gamesPlayed}</p>
     `;
     renderAvatarPicker();
     renderSubmissions();
+}
+
+function renamePlayer() {
+    const name = prompt('הכנס שם חדש:', gameState.playerName);
+    if (name && name.trim()) {
+        gameState.playerName = name.trim().slice(0, 20);
+        saveGameState();
+        updateHomeUI();
+        renderProfile();
+        showMessage('השם עודכן!', 'success');
+    }
 }
 
 // ===== Word review panel (creator decides what enters the dictionary) =====
@@ -721,8 +792,8 @@ function renderSubmissions() {
         row.innerHTML = `
             <span class="sub-word">${s.word}</span>
             <span class="sub-actions">
-                <button class="approve-btn">✔ הוסף למאגר</button>
-                <button class="reject-btn">✖ דחה</button>
+                <button class="approve-btn">${icon('check')} הוסף למאגר</button>
+                <button class="reject-btn">${icon('close')} דחה</button>
             </span>`;
         row.querySelector('.approve-btn').onclick = () => reviewSubmission(s.word, true);
         row.querySelector('.reject-btn').onclick = () => reviewSubmission(s.word, false);
@@ -740,7 +811,7 @@ function reviewSubmission(word, approve) {
         if (!custom.includes(word)) custom.push(word);
         localStorage.setItem('zabangCustomWords', JSON.stringify(custom));
         HEBREW_DICTIONARY[word] = pointsForWord(word);
-        showMessage(`✅ "${word}" נוספה למאגר!`, 'success');
+        showMessage(`"${word}" נוספה למאגר!`, 'success');
     } else {
         showMessage(`המילה "${word}" נדחתה`, 'warning');
     }
@@ -767,5 +838,5 @@ function selectAvatar(id) {
     saveGameState();
     renderAvatarPicker();
     updateHomeUI();
-    showMessage(`✅ הדמות הוחלפה ל${getAvatarById(id).name}!`, 'success');
+    showMessage(`הדמות הוחלפה ל${getAvatarById(id).name}!`, 'success');
 }
