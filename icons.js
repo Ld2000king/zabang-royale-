@@ -37,6 +37,8 @@ const ICONS = {
 
     pencil: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 L4.7 16.4 L15.5 5.6 a2 2 0 0 1 2.8 0 L19.4 6.7 a2 2 0 0 1 0 2.8 L8.6 20.3 Z"/><path d="M14 7 L17.5 10.5"/></svg>`,
 
+    help: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5 a2.8 2.8 0 1 1 4.3 2.4 c-0.9 0.6 -1.5 1.1 -1.5 2.1"/><circle cx="12" cy="17" r="0.1" fill="currentColor" stroke-width="2.5"/></svg>`,
+
     sword: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 L18 6"/><path d="M7.8 11.8 L12.2 16.2"/><circle cx="6" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg>`,
 };
 

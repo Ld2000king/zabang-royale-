@@ -19,6 +19,7 @@
     <div id="app">
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
+            <button class="help-btn icon" onclick="showInstructions()" title="הוראות משחק"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5 a2.8 2.8 0 1 1 4.3 2.4 c-0.9 0.6 -1.5 1.1 -1.5 2.1"/><circle cx="12" cy="17" r="0.1" fill="currentColor" stroke-width="2.5"/></svg></button>
             <div class="home-content">
                 <h1 class="main-title">זבאנג רויאל</h1>
                 <p class="subtitle">משחק מילים בעברית</p>
@@ -51,6 +52,23 @@
             </div>
         </div>
 
+        <!-- Instructions -->
+        <div id="instructionsScreen" class="screen">
+            <div class="modal-content">
+                <h2>הוראות משחק</h2>
+                <ul class="instructions-list">
+                    <li>גרור אצבע על אותיות סמוכות בלוח כדי לחבר מילה בעברית.</li>
+                    <li>מילה תקפה מזכה בניקוד לפי אורכה - ככל שהמילה ארוכה יותר, כך הניקוד גבוה יותר.</li>
+                    <li><strong>משחק יחיד:</strong> 60 שניות למצוא כמה שיותר מילים בלוח.</li>
+                    <li><strong>באטל רויאל:</strong> 5 סיבובים נגד 4 בוטים - בכל סיבוב מודח מי שצבר הכי מעט ניקוד.</li>
+                    <li>עזרים (רמז, ערבוב לוח, הקפאה) נקנים במטבעות תוך כדי משחק.</li>
+                    <li>אם נגמרות המילים האפשריות בלוח, הוא מתערבב אוטומטית כדי שתוכלו להמשיך לשחק.</li>
+                    <li>מטבעות מרוויחים דרך משחק וניתן להשתמש בהם בחנות ולקנות עזרים.</li>
+                </ul>
+                <button class="close-modal-btn" onclick="goHome()">הבנתי</button>
+            </div>
+        </div>
+
         <!-- Game Mode Selection -->
         <div id="gameModeScreen" class="screen">
             <div class="modal-content">
@@ -74,7 +92,69 @@
                     <div class="mode-arrow">›</div>
                 </div>
 
+                <div class="mode-option" onclick="showMultiplayerChoice()">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20 c0 -4 2.7 -6 6 -6 s6 2 6 6"/><path d="M15.5 14 c2.7 0.2 4.5 2 4.5 5"/></svg></div>
+                    <div class="mode-details">
+                        <h3>מולטיפלייר עם חברים</h3>
+                        <p>שחקו נגד חברים אמיתיים באמצעות קוד חדר</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
                 <button class="close-modal-btn" onclick="goHome()">חזור</button>
+            </div>
+        </div>
+
+        <!-- Multiplayer: create/join choice -->
+        <div id="mpChoiceScreen" class="screen">
+            <div class="modal-content">
+                <h2>מולטיפלייר עם חברים</h2>
+
+                <div class="mode-option" onclick="createRoom()">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8 V16 M8 12 H16"/></svg></div>
+                    <div class="mode-details">
+                        <h3>צור חדר</h3>
+                        <p>פתחו חדר וקבלו קוד לשיתוף עם חברים</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <div class="mode-option" onclick="showJoinScreen()">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3 H19 a2 2 0 0 1 2 2 V19 a2 2 0 0 1 -2 2 H15"/><path d="M10 17 L15 12 L10 7"/><path d="M15 12 H3"/></svg></div>
+                    <div class="mode-details">
+                        <h3>הצטרף לחדר</h3>
+                        <p>הזינו קוד חדר שקיבלתם מחבר</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <button class="close-modal-btn" onclick="showGameModeSelection()">חזור</button>
+            </div>
+        </div>
+
+        <!-- Multiplayer: join by code -->
+        <div id="mpJoinScreen" class="screen">
+            <div class="modal-content">
+                <h2>הצטרפות לחדר</h2>
+                <p class="mp-hint">הזינו את קוד החדר (5 תווים):</p>
+                <input type="text" id="joinCodeInput" class="room-code-input" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="ABCDE">
+                <button class="btn-large blue-btn" onclick="joinRoomFromInput()">הצטרף</button>
+                <button class="close-modal-btn" onclick="showMultiplayerChoice()">חזור</button>
+            </div>
+        </div>
+
+        <!-- Multiplayer: lobby -->
+        <div id="mpLobbyScreen" class="screen">
+            <div class="modal-content">
+                <h2>חדר משחק</h2>
+                <p class="mp-hint">קוד החדר - שתפו עם חברים:</p>
+                <div class="room-code-display" id="lobbyRoomCode" onclick="copyRoomCode()" title="לחצו להעתקה">-----</div>
+                <p class="mp-copied" id="lobbyCopied" style="display:none;">הקוד הועתק!</p>
+                <h3 class="lobby-players-title">שחקנים בחדר:</h3>
+                <div class="players-status lobby-players" id="lobbyPlayers"></div>
+                <button class="btn-large blue-btn" id="lobbyStartBtn" onclick="hostStartMultiplayerGame()" style="display:none;">התחל משחק ›</button>
+                <p class="mp-waiting" id="lobbyWaiting">ממתין למארח שיתחיל את המשחק...</p>
+                <button class="close-modal-btn" onclick="goHome()">יציאה</button>
             </div>
         </div>
 
@@ -117,10 +197,10 @@
             <div class="current-word-display" id="battleWordDisplay"></div>
 
             <div class="power-ups-row">
-                <button class="power-up-btn" onclick="useBattleHint()" title="רמז"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 H15"/><path d="M12 3 a6 6 0 0 1 3.5 10.9 c-0.8 0.6 -1.2 1.4 -1.2 2.1 H9.7 c0 -0.7 -0.4 -1.5 -1.2 -2.1 A6 6 0 0 1 12 3 Z"/></svg></span><span class="pu-cost">20</span></button>
+                <button class="power-up-btn" onclick="handleBattleHint()" title="רמז"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 H15"/><path d="M12 3 a6 6 0 0 1 3.5 10.9 c-0.8 0.6 -1.2 1.4 -1.2 2.1 H9.7 c0 -0.7 -0.4 -1.5 -1.2 -2.1 A6 6 0 0 1 12 3 Z"/></svg></span><span class="pu-cost">20</span></button>
                 <button class="power-up-btn" onclick="useShuffle()" title="ערבב לוח"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6 H7 L17 18 H21"/><path d="M17 6 H21 V10"/><path d="M3 18 H7 L10.5 13.8"/><path d="M17 18 H21 V14"/></svg></span><span class="pu-cost">10</span></button>
-                <button class="power-up-btn" onclick="useBattleFreeze()" title="הקפא יריבים"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2 V22 M4.5 6 L19.5 18 M19.5 6 L4.5 18"/><circle cx="12" cy="12" r="10" stroke-dasharray="2 3"/></svg></span><span class="pu-cost">40</span></button>
-                <button class="power-up-btn" onclick="useBattleShuffle()" title="ערבב ליריבים"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5 H21"/><path d="M5 10 H19"/><path d="M8 15 H16"/><path d="M10 20 H14"/></svg></span><span class="pu-cost">25</span></button>
+                <button class="power-up-btn" onclick="handleBattleFreeze()" title="הקפא יריבים"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2 V22 M4.5 6 L19.5 18 M19.5 6 L4.5 18"/><circle cx="12" cy="12" r="10" stroke-dasharray="2 3"/></svg></span><span class="pu-cost">40</span></button>
+                <button class="power-up-btn" id="battleShuffleBtn" onclick="useBattleShuffle()" title="ערבב ליריבים"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5 H21"/><path d="M5 10 H19"/><path d="M8 15 H16"/><path d="M10 20 H14"/></svg></span><span class="pu-cost">25</span></button>
             </div>
 
             <div class="player-score">
@@ -149,20 +229,22 @@
         <div id="roundEndScreen" class="screen">
             <div class="result-modal">
                 <h2>סיום סיבוב</h2>
+                <p class="elimination-notice" id="eliminationNotice"></p>
                 <div class="standings" id="standingsDisplay"></div>
                 <div class="reward-box">
                     <span class="coin-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="#ffd60a" stroke="#ffb700" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#ffb700" stroke-width="1.5"/></svg></span>
                     <span>+25 מטבעות</span>
                 </div>
-                <button class="btn-large" onclick="nextBattleRound()">סיבוב הבא ›</button>
+                <button class="btn-large" id="nextRoundBtn" onclick="handleNextRoundClick()">סיבוב הבא ›</button>
+                <p class="mp-waiting" id="roundEndWaiting" style="display:none;">ממתין למארח שימשיך לסיבוב הבא...</p>
             </div>
         </div>
 
         <!-- Victory Screen -->
         <div id="victoryScreen" class="screen">
             <div class="victory-modal">
-                <h1><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span> ניצחת! <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span></h1>
-                <p>שרדת את כל 5 הסיבובים!</p>
+                <h1 id="victoryTitle"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span> ניצחת! <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span></h1>
+                <p id="victorySubtitle">שרדת את כל 5 הסיבובים!</p>
                 <div class="victory-rewards" id="victoryRewards"></div>
                 <button class="btn-large blue-btn" onclick="goHome()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></span> מסך הבית</button>
             </div>
@@ -203,9 +285,13 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="avatars.js"></script>
     <script src="icons.js"></script>
     <script src="game.js"></script>
+    <script src="multiplayer.js"></script>
     <script>
         // Register service worker for offline play & installability
         // (skipped on file:// - works when served over http/https)

@@ -105,12 +105,20 @@ function showScreen(screenId) {
 
 function goHome() {
     if (currentGame.timer) clearInterval(currentGame.timer);
+    // Multiplayer: detach Firebase listeners / leave the room before going home
+    if (currentGame.mode === 'multiplayer' && typeof leaveMultiplayerRoom === 'function') {
+        leaveMultiplayerRoom();
+    }
     showScreen('homeScreen');
     updateHomeUI();
 }
 
 function showGameModeSelection() {
     showScreen('gameModeScreen');
+}
+
+function showInstructions() {
+    showScreen('instructionsScreen');
 }
 
 function goToShop() {
@@ -276,6 +284,11 @@ function endDrag() {
 
         if (currentGame.mode === 'single') {
             document.getElementById('scoreDisplay').textContent = currentGame.score;
+        } else if (currentGame.mode === 'multiplayer') {
+            currentGame.playerScore += points;
+            document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
+            // Write the new total to Firebase so opponents see it live
+            if (typeof submitMultiplayerWord === 'function') submitMultiplayerWord(word, currentGame.playerScore);
         } else {
             currentGame.playerScore += points;
             document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
@@ -283,6 +296,7 @@ function endDrag() {
 
         updateFoundWords();
         showMessage(`כל הכבוד! +${points}`, 'success');
+        launchSparkles();
         autoShuffleIfExhausted();
     }
 
@@ -291,7 +305,8 @@ function endDrag() {
 }
 
 function activeBoardId() {
-    return currentGame.mode === 'battle' ? 'battleBoard' : 'board';
+    // 'battle' and 'multiplayer' both use the battle board; only 'single' uses #board
+    return currentGame.mode === 'single' ? 'board' : 'battleBoard';
 }
 
 // Called after any word is found (drag or hint) - if no valid unfound
@@ -328,6 +343,46 @@ function showMessage(msg, type = 'info') {
     msgEl.textContent = msg;
     document.body.appendChild(msgEl);
     setTimeout(() => msgEl.remove(), 2000);
+}
+
+const CELEBRATION_COLORS = ['#00e5ff', '#39ff6a', '#ffd60a', '#ff2ec4', '#8b5cf6', '#ff3b5c'];
+
+// Big confetti burst - victory moments
+function launchConfetti(count = 70) {
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+
+    for (let i = 0; i < count; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = CELEBRATION_COLORS[Math.floor(Math.random() * CELEBRATION_COLORS.length)];
+        piece.style.animationDelay = `${Math.random() * 0.4}s`;
+        piece.style.animationDuration = `${2 + Math.random() * 1.5}s`;
+        container.appendChild(piece);
+    }
+
+    setTimeout(() => container.remove(), 4000);
+}
+
+// Small sparkle burst - every word found
+function launchSparkles(count = 10) {
+    const container = document.createElement('div');
+    container.className = 'sparkle-container';
+    document.body.appendChild(container);
+
+    for (let i = 0; i < count; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'sparkle-piece';
+        piece.style.left = `${40 + Math.random() * 20}vw`;
+        piece.style.top = `${35 + Math.random() * 20}vh`;
+        piece.style.background = CELEBRATION_COLORS[Math.floor(Math.random() * CELEBRATION_COLORS.length)];
+        piece.style.animationDelay = `${Math.random() * 0.15}s`;
+        container.appendChild(piece);
+    }
+
+    setTimeout(() => container.remove(), 1000);
 }
 
 // Invalid word: show for 1.5s a clickable "real word?" toast.
@@ -472,6 +527,7 @@ function useHint() {
     setTimeout(() => tiles.forEach(t => t.classList.remove('selected')), 1500);
 
     showMessage(`${word} - כל הכבוד! +${points}`, 'success');
+    launchSparkles();
 }
 
 // Find a dictionary word that actually exists on the board (horizontal or
@@ -591,6 +647,7 @@ function useBattleHint() {
     setTimeout(() => tiles.forEach(t => t.classList.remove('selected')), 1500);
 
     showMessage(`${word} - כל הכבוד! +${points}`, 'success');
+    launchSparkles();
 }
 
 // Battle Royale
@@ -620,6 +677,10 @@ function startBattleRound() {
 
     showScreen('battleScreen');
     document.getElementById('roundBadge').textContent = `סיבוב ${battleState.currentRound}/5`;
+    // ensure the "shuffle opponents" power-up is visible in bots mode
+    // (multiplayer mode hides it since it doesn't apply to real players)
+    const shuffleBtn = document.getElementById('battleShuffleBtn');
+    if (shuffleBtn) shuffleBtn.style.display = '';
     renderBoard('battleBoard');
     updateBattleUI();
     startBotAI();
@@ -677,11 +738,13 @@ function endBattleRound() {
 
     if (loser === gameState.playerName) {
         // Player eliminated
+        document.getElementById('victoryTitle').innerHTML = `${icon('close')} הודחת! ${icon('close')}`;
+        document.getElementById('victorySubtitle').textContent = `הודחת בסיבוב ${battleState.currentRound} מתוך ${battleState.totalRounds}`;
         showScreen('victoryScreen');
         document.getElementById('victoryRewards').innerHTML = `
             <div class="reward-box">
                 <span class="coin-icon icon">${ICONS.coin}</span>
-                <span>הודחת בסיבוב ${battleState.currentRound}</span>
+                <span>סה"כ: ${battleState.totalCoinsEarned} מטבעות</span>
             </div>
         `;
     } else {
@@ -699,29 +762,33 @@ function endBattleRound() {
             gameState.coins += 100;
             battleState.totalCoinsEarned += 100;
             saveGameState();
+            document.getElementById('victoryTitle').innerHTML = `${icon('trophy')} ניצחת! ${icon('trophy')}`;
+            document.getElementById('victorySubtitle').textContent = `שרדת את כל ${battleState.totalRounds} הסיבובים!`;
             showScreen('victoryScreen');
             document.getElementById('victoryRewards').innerHTML = `
                 <div class="reward-box">
                     <span class="coin-icon icon">${ICONS.coin}</span>
-                    <span>סה"כ: ${battleState.totalCoinsEarned + 100} מטבעות!</span>
+                    <span>סה"כ: ${battleState.totalCoinsEarned} מטבעות!</span>
                 </div>
             `;
+            launchConfetti();
         } else {
             // Next round
-            showRoundEnd(standings);
+            showRoundEnd(standings, loser);
         }
     }
 }
 
-function showRoundEnd(standings) {
+function showRoundEnd(standings, eliminatedName) {
     const standingsHTML = standings.map((s, i) => `
-        <div class="standing">
+        <div class="standing${s.name === eliminatedName ? ' eliminated' : ''}">
             <span>#${i + 1}</span>
-            <span>${s.name}</span>
+            <span>${s.name}${s.name === eliminatedName ? ' ' + icon('close') : ''}</span>
             <span>${s.score}</span>
         </div>
     `).join('');
 
+    document.getElementById('eliminationNotice').textContent = `${eliminatedName} הודח/ה מהסיבוב!`;
     document.getElementById('standingsDisplay').innerHTML = standingsHTML;
     showScreen('roundEndScreen');
 }
@@ -729,6 +796,16 @@ function showRoundEnd(standings) {
 function nextBattleRound() {
     battleState.currentRound++;
     startBattleRound();
+}
+
+// The round-end "next round" button is shared between bots-battle and
+// multiplayer. Route to the right handler based on the current mode.
+function handleNextRoundClick() {
+    if (currentGame.mode === 'multiplayer' && typeof hostNextMultiplayerRound === 'function') {
+        hostNextMultiplayerRound();
+    } else {
+        nextBattleRound();
+    }
 }
 
 // Shop - price list of the in-game power-ups (they are paid with coins

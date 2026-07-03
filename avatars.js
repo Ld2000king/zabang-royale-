@@ -138,6 +138,24 @@ const AVATARS = [
         </svg>`
     },
     {
+        id: 'dog',
+        name: 'חומי',
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#d7ccc8"/>
+            <path d="M22 38 Q10 20 24 14 Q30 30 34 40 Z" fill="#6d4c41"/>
+            <path d="M78 38 Q90 20 76 14 Q70 30 66 40 Z" fill="#6d4c41"/>
+            <circle cx="50" cy="50" r="27" fill="#8d5524"/>
+            <ellipse cx="50" cy="60" rx="14" ry="11" fill="#c98a4b"/>
+            <circle cx="41" cy="46" r="3.5" fill="#2b1a0e"/>
+            <circle cx="59" cy="46" r="3.5" fill="#2b1a0e"/>
+            <circle cx="42.2" cy="45" r="1" fill="#fff"/>
+            <circle cx="60.2" cy="45" r="1" fill="#fff"/>
+            <ellipse cx="50" cy="58" rx="5" ry="3.5" fill="#2b1a0e"/>
+            <path d="M50 61 Q46 66 42 63 M50 61 Q54 66 58 63" stroke="#2b1a0e" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M20 100 Q20 78 50 78 Q80 78 80 100 Z" fill="#6d4c41"/>
+        </svg>`
+    },
+    {
         id: 'alien',
         name: 'חייזר',
         svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
