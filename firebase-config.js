@@ -13,7 +13,7 @@ const firebaseConfig = {
     // עמוד ה-Realtime Database ב-Console (נראית כמו אחת מאלה):
     //   https://zbang-royale-default-rtdb.firebaseio.com               (אזור ברירת מחדל US)
     //   https://zbang-royale-default-rtdb.europe-west1.firebasedatabase.app  (אירופה)
-    databaseURL: "PASTE_YOUR_DATABASE_URL",
+    databaseURL: "https://zbang-royale-default-rtdb.firebaseio.com",
     projectId: "zbang-royale",
     storageBucket: "zbang-royale.firebasestorage.app",
     messagingSenderId: "571259407169",
