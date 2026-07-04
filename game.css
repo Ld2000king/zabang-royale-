@@ -107,7 +107,6 @@
     letter-spacing: 1.5px;
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
 .mega-btn::after {
@@ -129,19 +128,22 @@
 
 .blue-btn {
     background: var(--grad-blue);
-    color: white;
+    color: var(--text-dark);
+    text-shadow: none;
     box-shadow: var(--glow-cyan);
 }
 
 .orange-btn {
     background: var(--grad-orange);
-    color: white;
+    color: var(--text-dark);
+    text-shadow: none;
     box-shadow: var(--glow-orange);
 }
 
 .green-btn {
     background: var(--grad-green);
-    color: white;
+    color: var(--text-dark);
+    text-shadow: none;
     box-shadow: var(--glow-green);
 }
 
@@ -162,10 +164,7 @@
     font-family: var(--font-display);
     font-size: 2.2em;
     margin-bottom: 25px;
-    background: var(--grad-blue);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-dark);
 }
 
 .mode-option {
@@ -211,7 +210,7 @@
 
 .mode-arrow {
     font-size: 2em;
-    color: var(--neon-cyan);
+    color: var(--text-dark);
     font-weight: bold;
 }
 
@@ -220,12 +219,13 @@
     padding: 15px;
     background: var(--grad-purple);
     color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
     border: none;
     border-radius: var(--radius-btn);
     font-weight: 700;
     font-family: var(--font-display);
     cursor: pointer;
-    font-size: 1em;
+    font-size: 1.2em;
     box-shadow: var(--glow-purple);
     transition: all 0.2s ease;
 }
@@ -372,8 +372,7 @@
     font-size: 2.2em;
     font-weight: 700;
     background: var(--grad-blue);
-    color: white;
-    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+    color: var(--text-dark);
     border: var(--border-thick) solid rgba(255, 255, 255, 0.6);
     border-radius: var(--radius-tile);
     cursor: pointer;
@@ -489,7 +488,7 @@
 
 .round-badge {
     background: var(--grad-orange);
-    color: white;
+    color: var(--text-dark);
     padding: 8px 16px;
     border-radius: 20px;
     font-family: var(--font-display);
@@ -552,7 +551,7 @@
 
 .result-modal h2 {
     font-family: var(--font-display);
-    color: var(--neon-cyan-deep);
+    color: var(--text-dark);
     font-size: 2em;
     margin-bottom: 20px;
 }
@@ -583,6 +582,7 @@
     text-align: center;
     color: var(--neon-red);
     font-weight: 700;
+    font-size: 1.2em;
     margin-bottom: 15px;
 }
 
@@ -598,19 +598,16 @@
     margin: 20px 0;
     font-size: 1.2em;
     font-weight: 700;
-    color: var(--neon-gold-deep);
+    color: #7a5200;
     box-shadow: var(--glow-gold);
 }
 
 .victory-modal h1 {
     font-family: var(--font-display);
     font-size: 3.5em;
-    background: var(--grad-gold);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-dark);
     margin-bottom: 10px;
-    filter: drop-shadow(0 0 14px rgba(255, 214, 10, 0.5));
+    filter: drop-shadow(0 0 10px rgba(255, 214, 10, 0.7));
 }
 
 .victory-modal p {
@@ -627,11 +624,10 @@
     border: var(--border-thick) solid rgba(255, 255, 255, 0.5);
     border-radius: var(--radius-btn);
     font-family: var(--font-display);
-    font-size: 1.1em;
+    font-size: 1.2em;
     font-weight: 700;
     cursor: pointer;
     margin-top: 20px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
     transition: all 0.2s;
 }
 
@@ -655,6 +651,7 @@
 .purple-btn {
     background: var(--grad-purple);
     color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
     box-shadow: var(--glow-purple);
 }
 
@@ -673,7 +670,7 @@
 
 .shop-container h2, .profile-container h2 {
     font-family: var(--font-display);
-    color: var(--neon-cyan-deep);
+    color: var(--text-dark);
     font-size: 2em;
     margin-bottom: 20px;
 }
@@ -726,11 +723,12 @@
     gap: 8px;
     padding: 10px 16px;
     background: var(--grad-blue);
-    color: white;
+    color: var(--text-dark);
     border: none;
     border-radius: 8px;
     font-family: var(--font-display);
     font-weight: 700;
+    font-size: 16px;
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -808,7 +806,7 @@
 }
 
 .avatar-name {
-    font-size: 0.85em;
+    font-size: 16px;
     font-weight: 700;
     color: #1a1a2e;
 }
@@ -851,7 +849,7 @@
     border: none;
     color: var(--neon-cyan-deep);
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 16px;
     padding: 4px;
     vertical-align: middle;
 }
@@ -879,6 +877,7 @@
     padding: 20px 40px;
     border-radius: 12px;
     font-family: var(--font-display);
+    font-size: 1.2em;
     font-weight: 700;
     border: var(--border-thick) solid rgba(255, 255, 255, 0.5);
     z-index: 1000;
@@ -898,13 +897,14 @@
 
 .message.success {
     background: var(--grad-green);
-    color: white;
+    color: var(--text-dark);
     box-shadow: var(--glow-green);
 }
 
 .message.error {
     background: var(--grad-red);
     color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
     box-shadow: var(--glow-red);
 }
 
@@ -916,7 +916,7 @@
 
 .message.info {
     background: var(--grad-blue);
-    color: white;
+    color: var(--text-dark);
     box-shadow: var(--glow-cyan);
 }
 
@@ -1050,7 +1050,7 @@
     background: var(--grad-gold);
     color: #1a1a2e;
     font-family: var(--font-display);
-    font-size: 0.45em;
+    font-size: 14px;
     font-weight: 800;
     padding: 1px 8px;
     border-radius: 10px;
@@ -1072,7 +1072,7 @@
     padding: 8px 14px;
     font-weight: 800;
     font-family: inherit;
-    font-size: 0.9em;
+    font-size: 16px;
     cursor: pointer;
     white-space: nowrap;
 }
@@ -1088,12 +1088,12 @@
 
 .submissions-section h3 {
     font-family: var(--font-display);
-    color: var(--neon-gold-deep);
+    color: var(--text-dark);
     margin-bottom: 12px;
 }
 
 .no-subs {
-    color: #888;
+    color: #555;
     text-align: center;
     padding: 10px;
 }
@@ -1128,17 +1128,17 @@
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    font-size: 0.85em;
+    font-size: 16px;
 }
 
 .approve-btn {
     background: var(--grad-green);
-    color: white;
+    color: var(--text-dark);
 }
 
 .reject-btn {
     background: var(--grad-red);
-    color: white;
+    color: var(--text-dark);
 }
 
 .sub-status {
@@ -1149,12 +1149,12 @@
 }
 
 .sub-pending {
-    color: #a17a00;
+    color: #7a5200;
     background: rgba(255, 214, 10, 0.2);
 }
 
 .sub-approved {
-    color: var(--neon-lime-deep);
+    color: #0e7a42;
     background: rgba(57, 255, 106, 0.15);
 }
 
@@ -1299,7 +1299,53 @@
 
 .mp-waiting {
     text-align: center;
-    color: #888;
+    color: #555;
     font-weight: 600;
     margin: 12px 0;
+}
+
+/* ===== Accessibility statement footer link ===== */
+.accessibility-link {
+    position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 14, 23, 0.85);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 50;
+    text-decoration: none;
+    backdrop-filter: blur(4px);
+}
+
+.accessibility-link:hover {
+    background: rgba(10, 14, 23, 1);
+    box-shadow: var(--glow-cyan);
+}
+
+.accessibility-statement h3 {
+    color: var(--neon-cyan-deep);
+    font-size: 1.15em;
+    margin: 16px 0 8px;
+}
+
+.accessibility-statement h3:first-child {
+    margin-top: 0;
+}
+
+.accessibility-statement p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.accessibility-statement a {
+    color: var(--neon-cyan-deep);
+    font-weight: 700;
 }

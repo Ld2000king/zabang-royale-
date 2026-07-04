@@ -177,6 +177,10 @@ function showInstructions() {
     showScreen('instructionsScreen');
 }
 
+function showAccessibilityStatement() {
+    showScreen('accessibilityScreen');
+}
+
 function goToShop() {
     renderShop();
     showScreen('shopScreen');
