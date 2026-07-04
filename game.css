@@ -1297,6 +1297,20 @@
     color: var(--text-dark);
 }
 
+.mp-spinner {
+    width: 60px;
+    height: 60px;
+    margin: 10px auto 20px;
+    border: 6px solid rgba(0, 229, 255, 0.2);
+    border-top-color: var(--neon-cyan);
+    border-radius: 50%;
+    animation: mpSpin 0.9s linear infinite;
+}
+
+@keyframes mpSpin {
+    to { transform: rotate(360deg); }
+}
+
 .mp-waiting {
     text-align: center;
     color: #555;

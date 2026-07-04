@@ -18,7 +18,9 @@ const MP = {
     serverOffset: 0,   // ms difference between server clock and this device
     lastRound: 0,      // detect round changes to (re)render the board once
     timer: null,       // local countdown interval
-    room: null         // latest room snapshot
+    room: null,        // latest room snapshot
+    matchType: null,   // 'random' while this room came from random matchmaking
+    autoStarting: false // guards against double-firing the random-match auto-start
 };
 
 const ROUND_SECONDS = 60;
@@ -78,7 +80,7 @@ function showJoinScreen() {
 
 // ---- create / join ---------------------------------------------------------
 
-async function createRoom() {
+async function createRoom(opts = {}) {
     if (!mpAvailable()) return;
     try {
         await waitForAuth(); // Security Rules require auth != null - wait for anonymous sign-in first
@@ -88,6 +90,7 @@ async function createRoom() {
     }
     MP.playerId = getMyPlayerId();
     MP.isHost = true;
+    MP.matchType = opts.matchType || 'friends';
 
     // find an unused code
     let code;
@@ -101,6 +104,7 @@ async function createRoom() {
     await db.ref('rooms/' + code).set({
         status: 'waiting',
         hostId: MP.playerId,
+        matchType: MP.matchType,
         currentRound: 0,
         totalRounds: TOTAL_ROUNDS,
         roundDurationSec: ROUND_SECONDS,
@@ -110,7 +114,7 @@ async function createRoom() {
 
     attachPresence();
     listenToRoom(code);
-    showScreen('mpLobbyScreen');
+    if (!opts.silent) showScreen('mpLobbyScreen');
 }
 
 function joinRoomFromInput() {
@@ -120,28 +124,30 @@ function joinRoomFromInput() {
     joinRoom(code);
 }
 
-async function joinRoom(code) {
-    if (!mpAvailable()) return;
+async function joinRoom(code, opts = {}) {
+    if (!mpAvailable()) return false;
     try {
         await waitForAuth(); // Security Rules require auth != null - wait for anonymous sign-in first
     } catch (e) {
-        showMessage('החיבור ל-Firebase נכשל - נסה שוב', 'error');
-        return;
+        if (!opts.silent) showMessage('החיבור ל-Firebase נכשל - נסה שוב', 'error');
+        return false;
     }
     MP.playerId = getMyPlayerId();
     MP.isHost = false;
 
     const snap = await db.ref('rooms/' + code).once('value');
-    if (!snap.exists()) { showMessage('חדר לא נמצא', 'error'); return; }
+    if (!snap.exists()) { if (!opts.silent) showMessage('חדר לא נמצא', 'error'); return false; }
     const room = snap.val();
-    if (room.status !== 'waiting') { showMessage('המשחק כבר התחיל', 'error'); return; }
+    if (room.status !== 'waiting') { if (!opts.silent) showMessage('המשחק כבר התחיל', 'error'); return false; }
 
     MP.roomCode = code;
+    MP.matchType = room.matchType || 'friends';
     await db.ref('rooms/' + code + '/players/' + MP.playerId).set(myPlayerNode());
 
     attachPresence();
     listenToRoom(code);
-    showScreen('mpLobbyScreen');
+    if (!opts.silent) showScreen('mpLobbyScreen');
+    return true;
 }
 
 // mark this player disconnected if the tab closes / network drops
@@ -174,7 +180,11 @@ function onRoomUpdate(room) {
     currentGame.mode = 'multiplayer';
 
     if (room.status === 'waiting') {
-        renderLobby(room);
+        if (room.matchType === 'random') {
+            handleRandomWaitingRoom(room);
+        } else {
+            renderLobby(room);
+        }
         return;
     }
 
@@ -243,6 +253,172 @@ function copyRoomCode() {
     if (navigator.clipboard) navigator.clipboard.writeText(MP.roomCode).catch(() => {});
     const copied = document.getElementById('lobbyCopied');
     if (copied) { copied.style.display = 'block'; setTimeout(() => copied.style.display = 'none', 1500); }
+}
+
+// ---- random matchmaking ------------------------------------------------
+// Data model: matchmaking_queue/{playerId} = { roomCode, createdAt }.
+// One node per player (not one shared "current waiter" slot) so that an
+// onDisconnect().remove() registered on our own ticket can never delete
+// someone else's ticket, no matter how the matching races play out.
+
+function matchmakingQueueRef(playerId) {
+    return db.ref('matchmaking_queue/' + playerId);
+}
+
+function setSearchStatusText(text) {
+    const el = document.getElementById('searchStatusText');
+    if (el) el.textContent = text;
+}
+
+async function findRandomGame() {
+    if (!mpAvailable()) return;
+    try {
+        await waitForAuth(); // Security Rules require auth != null - wait for anonymous sign-in first
+    } catch (e) {
+        showMessage('החיבור ל-Firebase נכשל - נסה שוב', 'error');
+        return;
+    }
+    MP.playerId = getMyPlayerId();
+    setSearchStatusText('מחפש יריב זמין...');
+    showScreen('mpSearchScreen');
+
+    try {
+        const opponent = await findWaitingOpponent();
+        if (opponent && await tryJoinOpponent(opponent)) return;
+        await becomeWaitingPlayer();
+    } catch (e) {
+        console.error('Matchmaking failed:', e);
+        showMessage('החיפוש נכשל - נסה שוב', 'error');
+        showScreen('gameModeScreen');
+    }
+}
+
+// look for the longest-waiting opponent already sitting in the queue
+async function findWaitingOpponent() {
+    const snap = await db.ref('matchmaking_queue').once('value');
+    const all = snap.val() || {};
+    const candidates = Object.entries(all)
+        .filter(([pid]) => pid !== MP.playerId)
+        .sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0));
+    return candidates.length ? { playerId: candidates[0][0], roomCode: candidates[0][1].roomCode } : null;
+}
+
+// atomically claim someone's queue ticket so two seekers can never both
+// grab the same waiting player - the transaction only commits for whoever
+// gets there first, the loser falls back to becoming the new waiter.
+//
+// IMPORTANT: never abort (return undefined) based on the callback's `current`
+// argument. On a path with no live local listener the SDK seeds the very
+// first invocation with a phantom "unknown -> assume null" guess regardless
+// of the real server value; returning undefined here reads as a deliberate
+// cancel, so Firebase does NOT retry with the real data and the transaction
+// permanently fails even though a real ticket exists (verified: 100%
+// reproducible before this fix). Instead always return null (a harmless
+// no-op if the ticket is genuinely already gone) and inspect whatever
+// `current` was on the invocation that actually committed.
+async function tryJoinOpponent(opponent) {
+    const ref = matchmakingQueueRef(opponent.playerId);
+    let lastSeen;
+    const result = await ref.transaction(current => { lastSeen = current; return null; });
+    if (!result.committed || lastSeen === null || lastSeen === undefined) return false; // nothing real to claim
+
+    // rare race: the host may have canceled/closed right as we claimed them
+    const snap = await db.ref('rooms/' + opponent.roomCode).once('value');
+    if (!snap.exists() || snap.val().status !== 'waiting') return false;
+
+    const joined = await joinRoom(opponent.roomCode, { silent: true });
+    if (!joined) return false;
+    setSearchStatusText('נמצא יריב! מתחילים...');
+    return true;
+}
+
+// no one is waiting - open a fresh room and put myself in the queue
+async function becomeWaitingPlayer() {
+    await createRoom({ matchType: 'random', silent: true });
+    await matchmakingQueueRef(MP.playerId).set({
+        roomCode: MP.roomCode,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    });
+    // ghost-request cleanup: closing the tab while still alone removes both
+    // the queue ticket and the empty room. Cancelled the moment an opponent joins.
+    matchmakingQueueRef(MP.playerId).onDisconnect().remove();
+    db.ref('rooms/' + MP.roomCode).onDisconnect().remove();
+    showScreen('mpSearchScreen');
+    scheduleDoubleWaiterCheck();
+}
+
+// Self-heals the case where two players clicked at almost the exact same
+// instant: both read an empty queue and both became their own lone waiter,
+// so neither would otherwise ever find the other. A short re-scan catches
+// this. The ID tie-break (only the smaller playerId acts) guarantees that
+// if both sides run this check, only one of them attempts a claim - so this
+// fix can't itself create a new mutual-claim race.
+function scheduleDoubleWaiterCheck() {
+    const myCode = MP.roomCode;
+    setTimeout(async () => {
+        // bail if anything changed since scheduling: matched normally,
+        // canceled, or navigated away
+        if (MP.matchType !== 'random' || !MP.isHost || MP.roomCode !== myCode) return;
+        if (!MP.room || Object.keys(MP.room.players || {}).length >= 2) return;
+
+        try {
+            const opponent = await findWaitingOpponent();
+            if (!opponent || MP.playerId > opponent.playerId) return; // nothing to claim, or it's their job to claim me
+
+            const oldRoomRef = MP.roomRef; // capture before joinRoom() reassigns MP.roomRef
+            const claimed = await tryJoinOpponent(opponent);
+            if (!claimed) return;
+
+            // moved into their room - shed my own now-abandoned room and ticket
+            if (oldRoomRef) oldRoomRef.off();
+            db.ref('rooms/' + myCode).onDisconnect().cancel();
+            db.ref('rooms/' + myCode).remove().catch(() => {});
+            matchmakingQueueRef(MP.playerId).onDisconnect().cancel();
+            matchmakingQueueRef(MP.playerId).remove().catch(() => {});
+        } catch (e) {
+            console.error('Double-waiter self-heal failed:', e);
+        }
+    }, 1500);
+}
+
+// called from onRoomUpdate while a random-match room is still 'waiting'
+function handleRandomWaitingRoom(room) {
+    const count = Object.keys(room.players || {}).length;
+    if (count < 2) {
+        showScreen('mpSearchScreen');
+        return;
+    }
+    // matched - normal presence tracking takes over from here, so drop the
+    // "delete on disconnect" safety nets meant only for the lone-waiter window
+    if (MP.isHost) {
+        db.ref('rooms/' + MP.roomCode).onDisconnect().cancel();
+        matchmakingQueueRef(MP.playerId).remove();
+        matchmakingQueueRef(MP.playerId).onDisconnect().cancel();
+        if (!MP.autoStarting) {
+            MP.autoStarting = true;
+            startMultiplayerRound(1);
+        }
+    }
+    setSearchStatusText('נמצא יריב! מתחילים...');
+}
+
+// user pressed "cancel" while still searching / waiting for an opponent
+async function cancelRandomSearch() {
+    const code = MP.roomCode;
+    const wasSoloHost = MP.isHost && MP.room && Object.keys(MP.room.players || {}).length <= 1;
+
+    // best-effort cleanup - a failed/slow Firebase write must never strand
+    // the user on the search screen with no way back
+    if (MP.playerId && db) {
+        matchmakingQueueRef(MP.playerId).onDisconnect().cancel();
+        try { await matchmakingQueueRef(MP.playerId).remove(); } catch (e) { console.error('Queue cleanup failed:', e); }
+    }
+
+    leaveMultiplayerRoom();
+    if (wasSoloHost && code) db.ref('rooms/' + code).remove().catch(() => {}); // no ghost room left behind
+
+    showScreen('gameModeScreen');
+    updateHomeUI();
 }
 
 // ---- host: start / advance rounds ------------------------------------------
@@ -497,6 +673,15 @@ function handleBattleFreeze() {
 
 function leaveMultiplayerRoom() {
     stopMultiplayerTimer();
+    // defensive matchmaking cleanup - a safe no-op for friends-mode games,
+    // and covers stray exits (e.g. goHome) while a random search is pending
+    if (MP.playerId && db) {
+        matchmakingQueueRef(MP.playerId).remove().catch(() => {});
+        matchmakingQueueRef(MP.playerId).onDisconnect().cancel();
+    }
+    if (MP.matchType === 'random' && MP.roomCode && db) {
+        db.ref('rooms/' + MP.roomCode).onDisconnect().cancel();
+    }
     if (MP.roomRef) { MP.roomRef.off(); MP.roomRef = null; }
     if (MP.roomCode && MP.playerId && db) {
         // if we're still just waiting in the lobby, remove our slot entirely
@@ -510,5 +695,7 @@ function leaveMultiplayerRoom() {
     MP.isHost = false;
     MP.room = null;
     MP.lastRound = 0;
+    MP.matchType = null;
+    MP.autoStarting = false;
     if (currentGame.mode === 'multiplayer') currentGame.mode = null;
 }
