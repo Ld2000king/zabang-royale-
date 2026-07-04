@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zabang-royal-v5';
+const CACHE_NAME = 'zabang-royal-v6';
 
 const ASSETS = [
     './',

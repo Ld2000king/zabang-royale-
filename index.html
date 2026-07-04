@@ -333,6 +333,17 @@
         </div>
     </div>
 
+    <!-- Generic yes/no confirmation modal (see showConfirm in game.js) -->
+    <div id="confirmOverlay" class="confirm-overlay" style="display:none;">
+        <div class="confirm-box">
+            <p id="confirmText"></p>
+            <div class="confirm-actions">
+                <button class="btn-large blue-btn" id="confirmYesBtn">כן</button>
+                <button class="close-modal-btn" id="confirmNoBtn">לא</button>
+            </div>
+        </div>
+    </div>
+
     <button class="accessibility-link" onclick="showAccessibilityStatement()">נגישות / Accessibility</button>
 
     <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>

@@ -733,6 +733,56 @@
     transition: all 0.3s;
 }
 
+.owned-count {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: var(--neon-lime-deep);
+    background: rgba(57, 255, 106, 0.15);
+    border-radius: 8px;
+    padding: 2px 8px;
+    vertical-align: middle;
+}
+
+/* Generic yes/no confirmation modal */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 30, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.confirm-box {
+    background: var(--panel-light);
+    border: var(--border-thick) solid rgba(0, 229, 255, 0.35);
+    border-radius: var(--radius-card);
+    box-shadow: var(--glow-cyan);
+    padding: 30px;
+    max-width: 420px;
+    width: calc(100% - 40px);
+    text-align: center;
+}
+
+.confirm-box p {
+    color: var(--text-dark);
+    font-weight: 700;
+    font-size: 1.15em;
+    margin-bottom: 22px;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.confirm-actions .btn-large,
+.confirm-actions .close-modal-btn {
+    flex: 1;
+    margin: 0;
+}
+
 .buy-btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--glow-cyan);

@@ -272,15 +272,20 @@ function setSearchStatusText(text) {
 
 async function findRandomGame() {
     if (!mpAvailable()) return;
+    // show the loading screen BEFORE awaiting auth - the anonymous sign-in
+    // can take up to 8s on a cold/slow connection, and with no immediate
+    // feedback the button click looks completely dead
+    setSearchStatusText('מתחבר...');
+    showScreen('mpSearchScreen');
     try {
         await waitForAuth(); // Security Rules require auth != null - wait for anonymous sign-in first
     } catch (e) {
         showMessage('החיבור ל-Firebase נכשל - נסה שוב', 'error');
+        showScreen('gameModeScreen');
         return;
     }
     MP.playerId = getMyPlayerId();
     setSearchStatusText('מחפש יריב זמין...');
-    showScreen('mpSearchScreen');
 
     try {
         const opponent = await findWaitingOpponent();
@@ -601,7 +606,7 @@ function updateMultiplayerUI(room) {
 // ---- power-ups (multiplayer variants) --------------------------------------
 
 function useMultiplayerHint() {
-    if (!hasInfiniteCoins() && gameState.coins < 20) { showMessage('אין מספיק מטבעות! (רמז עולה 20)', 'error'); return; }
+    if (!canPayForHint()) return;
 
     let indices = findWordOnBoard();
     if (indices.length === 0) { autoShuffleIfExhausted(); indices = findWordOnBoard(); if (indices.length === 0) return; }
@@ -609,7 +614,7 @@ function useMultiplayerHint() {
     const word = indices.map(i => currentGame.board[i]).join('');
     const points = HEBREW_DICTIONARY[word];
 
-    if (!hasInfiniteCoins()) gameState.coins -= 20;
+    consumeHintPayment();
     currentGame.foundWords.add(word);
     currentGame.playerScore += points;
     document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
