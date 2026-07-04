@@ -127,7 +127,8 @@ function approvePendingWord(reqId, word, points) {
     db.ref('approved_words/' + word).set(points)
         .then(() => db.ref('pending_requests/' + reqId).remove())
         .then(() => {
-            HEBREW_DICTIONARY[word] = points;
+            const norm = typeof normalizeFinals === 'function' ? normalizeFinals(word) : word;
+            HEBREW_DICTIONARY[norm] = points;
             showMessage(`"${word}" אושרה ונוספה למאגר!`, 'success');
         })
         .catch(err => showMessage('שגיאה: ' + err.message, 'error'));
@@ -146,7 +147,12 @@ function loadApprovedWordsFromFirebase() {
     if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY || !db) return;
     db.ref('approved_words').on('value', snap => {
         const words = snap.val() || {};
-        Object.entries(words).forEach(([word, points]) => { HEBREW_DICTIONARY[word] = points; });
+        // normalize final letters so approved words are findable on the board
+        // (the board only uses regular letter forms) - matches game.js
+        Object.entries(words).forEach(([word, points]) => {
+            const norm = typeof normalizeFinals === 'function' ? normalizeFinals(word) : word;
+            HEBREW_DICTIONARY[norm] = points;
+        });
     });
 }
 

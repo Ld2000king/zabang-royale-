@@ -69,12 +69,34 @@ const HEBREW_DICTIONARY = {
     'אחד': 100, 'שתיים': 250, 'שלוש': 100, 'ארבע': 100, 'חמש': 100, 'שבע': 100, 'שמונה': 250, 'תשע': 100, 'עשר': 100
 };
 
+// The board is built only from regular (non-final) Hebrew letter forms, so a
+// word spelled with a final letter (שלום, לחם, ...) could never be matched
+// against it. We normalize final forms to their regular counterparts
+// everywhere - dictionary keys, planted words, and words the player drags -
+// so those words become findable and every comparison is apples-to-apples.
+const FINAL_LETTER_MAP = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+
+function normalizeFinals(str) {
+    return str.replace(/[ךםןףץ]/g, c => FINAL_LETTER_MAP[c]);
+}
+
+// Rewrites HEBREW_DICTIONARY in place so every key uses regular letter forms.
+// If two keys collapse to the same normalized word, keep the higher score.
+function normalizeDictionary() {
+    for (const key of Object.keys(HEBREW_DICTIONARY)) {
+        const norm = normalizeFinals(key);
+        if (norm === key) continue;
+        HEBREW_DICTIONARY[norm] = Math.max(HEBREW_DICTIONARY[norm] || 0, HEBREW_DICTIONARY[key]);
+        delete HEBREW_DICTIONARY[key];
+    }
+}
+
 const SHOP_ITEMS = [
-    { key: 'hint', icon: 'hint', name: 'רמז', desc: 'מסמן בלוח מילה שעוד לא מצאת', cost: 20 },
-    { key: 'shuffle', icon: 'shuffle', name: 'ערבב לוח', desc: 'מחליף את אותיות הלוח', cost: 10 },
-    { key: 'freeze', icon: 'freeze', name: 'הקפא זמן', desc: 'מקפיא את השעון ל-5 שניות', cost: 30 },
-    { key: 'freezeOpponents', icon: 'freezeOpponents', name: 'הקפא יריבים', desc: 'באטל רויאל: מקפיא את הבוטים ל-8 שניות', cost: 40 },
-    { key: 'tornado', icon: 'tornado', name: 'ערבב ליריבים', desc: 'באטל רויאל: חותך את ניקוד הבוטים בחצי', cost: 25 }
+    { key: 'hint', icon: 'hint', name: 'רמז', desc: 'מסמן בלוח מילה שעוד לא מצאת', cost: 50 },
+    { key: 'shuffle', icon: 'shuffle', name: 'ערבב לוח', desc: 'מחליף את אותיות הלוח', cost: 20 },
+    { key: 'freeze', icon: 'freeze', name: 'הקפא זמן', desc: 'מקפיא את השעון ל-5 שניות', cost: 20 },
+    { key: 'freezeOpponents', icon: 'freezeOpponents', name: 'הקפא יריבים', desc: 'באטל רויאל: מקפיא את הבוטים ל-8 שניות', cost: 20 },
+    { key: 'tornado', icon: 'tornado', name: 'ערבב ליריבים', desc: 'באטל רויאל: חותך את ניקוד הבוטים בחצי', cost: 20 }
 ];
 
 const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
@@ -119,6 +141,7 @@ let battleState = {
 // Initialize
 window.addEventListener('load', () => {
     loadGameState();
+    normalizeDictionary();
     loadCustomWords();
     updateHomeUI();
 });
@@ -339,7 +362,8 @@ function detectTileAt(x, y) {
 
 function endDrag() {
     isDragging = false;
-    const word = dragPath.map(i => currentGame.board[i]).join('');
+    // board is all-regular forms, but normalize defensively so lookups match
+    const word = normalizeFinals(dragPath.map(i => currentGame.board[i]).join(''));
 
     if (word.length < 3) {
         showMessage('קצר מדי!', 'error');
@@ -505,7 +529,7 @@ function pointsForWord(word) {
 // dictionary on every launch
 function loadCustomWords() {
     const custom = JSON.parse(localStorage.getItem('zabangCustomWords') || '[]');
-    custom.forEach(w => { HEBREW_DICTIONARY[w] = pointsForWord(w); });
+    custom.forEach(w => { const word = normalizeFinals(w); HEBREW_DICTIONARY[word] = pointsForWord(word); });
 }
 
 // Single Player
@@ -770,6 +794,10 @@ function startBattleRound() {
     currentGame.freezeLeft = 0;
     currentGame.gameActive = true;
     battleState.botsFrozenSeconds = 0;
+    // each round is scored independently (the player already resets to 0 above);
+    // reset the surviving bots too so the round is a fair head-to-head and the
+    // per-round lowest scorer is eliminated
+    battleState.players.forEach(b => { if (!b.eliminated) b.score = 0; });
 
     showScreen('battleScreen');
     document.getElementById('roundBadge').textContent = `סיבוב ${battleState.currentRound}/5`;
@@ -825,9 +853,12 @@ function startBotAI() {
 }
 
 function endBattleRound() {
+    // Only the player + still-active bots compete for the round's elimination.
+    // (Including already-eliminated bots let their frozen low score win the
+    // "lowest" spot again, so no NEW bot ever got removed after round 1.)
     const standings = [
         { name: gameState.playerName, score: currentGame.playerScore },
-        ...battleState.players.map(b => ({ name: b.name, score: b.score }))
+        ...battleState.players.filter(b => !b.eliminated).map(b => ({ name: b.name, score: b.score }))
     ].sort((a, b) => a.score - b.score);
 
     const loser = standings[0].name;
