@@ -1,3 +1,12 @@
+// Escape HTML-significant characters before interpolating any user-controlled
+// string (player names, etc.) into innerHTML - prevents stored XSS, since
+// player names get shared across real clients in multiplayer mode.
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
 // Hebrew dictionary
 const HEBREW_DICTIONARY = {
     'בית': 100, 'שלום': 250, 'זבאנג': 500, 'מחשב': 250, 'כלב': 100, 'חתול': 100, 'שולחן': 250, 'כיסא': 100, 'אוטו': 100,
@@ -449,11 +458,26 @@ function showWordSubmitToast(word) {
 }
 
 function submitWordForReview(word) {
+    // Keep a local per-device history so the player can see what they've
+    // submitted - approval itself now only happens on the developer's
+    // admin-signed-in client, writing to a shared Firebase queue.
     const subs = JSON.parse(localStorage.getItem('zabangSubmissions') || '[]');
     if (!subs.some(s => s.word === word)) {
         subs.push({ word: word, date: new Date().toISOString() });
         localStorage.setItem('zabangSubmissions', JSON.stringify(subs));
     }
+
+    if (typeof FIREBASE_READY !== 'undefined' && FIREBASE_READY && db) {
+        authReady.then(() => {
+            db.ref('pending_requests').push({
+                word: word,
+                points: pointsForWord(word),
+                submittedBy: gameState.playerName,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).catch(err => console.error('Failed to submit word for review:', err));
+        });
+    }
+
     showMessage('תודה! המילה נשלחה לבדיקה', 'success');
 }
 
@@ -747,7 +771,7 @@ function updateBattleUI() {
         if (!bot.eliminated) {
             statusEl.innerHTML += `<div class="player-status">
                 <div class="status-avatar">${getAvatarById(bot.avatarId).svg}</div>
-                <span>${bot.name}</span><span>${bot.score}</span>
+                <span>${escapeHtml(bot.name)}</span><span>${bot.score}</span>
             </div>`;
         }
     }
@@ -830,7 +854,7 @@ function showRoundEnd(standings, eliminatedName) {
     const standingsHTML = standings.map((s, i) => `
         <div class="standing${s.name === eliminatedName ? ' eliminated' : ''}">
             <span>#${i + 1}</span>
-            <span>${s.name}${s.name === eliminatedName ? ' ' + icon('close') : ''}</span>
+            <span>${escapeHtml(s.name)}${s.name === eliminatedName ? ' ' + icon('close') : ''}</span>
             <span>${s.score}</span>
         </div>
     `).join('');
@@ -877,7 +901,7 @@ function renderShop() {
 // Profile
 function renderProfile() {
     document.getElementById('profileStats').innerHTML = `
-        <p><strong>שם:</strong> ${gameState.playerName} <button class="rename-btn" onclick="renamePlayer()" title="ערוך שם">${icon('pencil')}</button></p>
+        <p><strong>שם:</strong> ${escapeHtml(gameState.playerName)} <button class="rename-btn" onclick="renamePlayer()" title="ערוך שם">${icon('pencil')}</button></p>
         <p><strong>רמה:</strong> ${gameState.level}</p>
         <p><strong>מטבעות:</strong> ${coinsText()}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
@@ -890,7 +914,11 @@ function renderProfile() {
 function renamePlayer() {
     const name = prompt('הכנס שם חדש:', gameState.playerName);
     if (name && name.trim()) {
-        gameState.playerName = name.trim().slice(0, 20);
+        // Strip HTML-significant characters at the source - this name gets
+        // shared with other real players over Firebase in multiplayer mode
+        const cleaned = name.trim().slice(0, 20).replace(/[<>&"']/g, '');
+        if (!cleaned) { showMessage('שם לא תקין', 'error'); return; }
+        gameState.playerName = cleaned;
         saveGameState();
         updateHomeUI();
         renderProfile();
@@ -898,48 +926,31 @@ function renamePlayer() {
     }
 }
 
-// ===== Word review panel (creator decides what enters the dictionary) =====
+// ===== Word review panel - shows the player's own submission history.
+// Approval is admin-only now (see admin.js): words wait in a shared
+// Firebase queue until the developer's admin-signed-in client approves them. =====
 function renderSubmissions() {
     const el = document.getElementById('submissionsList');
-    if (!el) return;
-    const subs = JSON.parse(localStorage.getItem('zabangSubmissions') || '[]');
+    if (el) {
+        const subs = JSON.parse(localStorage.getItem('zabangSubmissions') || '[]');
 
-    if (subs.length === 0) {
-        el.innerHTML = '<p class="no-subs">אין מילים ממתינות לבדיקה</p>';
-        return;
+        if (subs.length === 0) {
+            el.innerHTML = '<p class="no-subs">אין מילים ממתינות לבדיקה</p>';
+        } else {
+            el.innerHTML = '';
+            subs.forEach(s => {
+                const row = document.createElement('div');
+                row.className = 'submission-row';
+                const approved = HEBREW_DICTIONARY[s.word] !== undefined;
+                row.innerHTML = `
+                    <span class="sub-word">${escapeHtml(s.word)}</span>
+                    <span class="sub-status ${approved ? 'sub-approved' : 'sub-pending'}">${approved ? icon('check') + ' אושרה' : 'ממתינה לאישור'}</span>`;
+                el.appendChild(row);
+            });
+        }
     }
 
-    el.innerHTML = '';
-    subs.forEach(s => {
-        const row = document.createElement('div');
-        row.className = 'submission-row';
-        row.innerHTML = `
-            <span class="sub-word">${s.word}</span>
-            <span class="sub-actions">
-                <button class="approve-btn">${icon('check')} הוסף למאגר</button>
-                <button class="reject-btn">${icon('close')} דחה</button>
-            </span>`;
-        row.querySelector('.approve-btn').onclick = () => reviewSubmission(s.word, true);
-        row.querySelector('.reject-btn').onclick = () => reviewSubmission(s.word, false);
-        el.appendChild(row);
-    });
-}
-
-function reviewSubmission(word, approve) {
-    let subs = JSON.parse(localStorage.getItem('zabangSubmissions') || '[]');
-    subs = subs.filter(s => s.word !== word);
-    localStorage.setItem('zabangSubmissions', JSON.stringify(subs));
-
-    if (approve) {
-        const custom = JSON.parse(localStorage.getItem('zabangCustomWords') || '[]');
-        if (!custom.includes(word)) custom.push(word);
-        localStorage.setItem('zabangCustomWords', JSON.stringify(custom));
-        HEBREW_DICTIONARY[word] = pointsForWord(word);
-        showMessage(`"${word}" נוספה למאגר!`, 'success');
-    } else {
-        showMessage(`המילה "${word}" נדחתה`, 'warning');
-    }
-    renderSubmissions();
+    if (typeof renderAdminSection === 'function') renderAdminSection();
 }
 
 function renderAvatarPicker() {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zabang-royal-v4';
+const CACHE_NAME = 'zabang-royal-v5';
 
 const ASSETS = [
     './',
@@ -10,6 +10,7 @@ const ASSETS = [
     './icons.js',
     './firebase-config.js',
     './multiplayer.js',
+    './admin.js',
     './manifest.json',
     './icon-192.png',
     './icon-512.png',

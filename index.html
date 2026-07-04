@@ -281,17 +281,33 @@
                     <h3><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15 V3"/><path d="M7 8 L12 3 L17 8"/><path d="M4 15 V19 H20 V15"/></svg></span> מילים שנשלחו לבדיקה</h3>
                     <div id="submissionsList"></div>
                 </div>
+
+                <!-- Admin-only: visible when playerName === 'ld2000', gated for real by Firebase Auth + Rules -->
+                <div class="admin-section" id="adminSection" style="display:none;">
+                    <h3><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7 Z"/><path d="M12 2 L12 4 M12 12 L12 14"/></svg></span> ניהול - אישור מילים (אדמין)</h3>
+                    <div id="adminSignedOut">
+                        <p class="mp-hint">התחבר כאדמין כדי לראות ולאשר בקשות מילים ממתינות מכל השחקנים:</p>
+                        <button class="btn-large blue-btn" onclick="adminSignIn()">התחברות כאדמין</button>
+                    </div>
+                    <div id="adminSignedIn" style="display:none;">
+                        <p class="mp-hint">בקשות ממתינות מכל השחקנים:</p>
+                        <div id="adminPendingList"></div>
+                        <button class="close-modal-btn" onclick="adminSignOut()">התנתקות מאדמין</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="avatars.js"></script>
     <script src="icons.js"></script>
     <script src="game.js"></script>
     <script src="multiplayer.js"></script>
+    <script src="admin.js"></script>
     <script>
         // Register service worker for offline play & installability
         // (skipped on file:// - works when served over http/https)

@@ -26,7 +26,28 @@ const firebaseConfig = {
 const FIREBASE_READY = !firebaseConfig.databaseURL.startsWith('PASTE_');
 
 let db = null;
+let auth = null;
+
+// resolves once we have a signed-in user (anonymous by default). Every
+// write that Security Rules protect (multiplayer rooms, word submissions)
+// should wait on this before touching Firebase.
+let authReadyResolve;
+const authReady = new Promise(resolve => { authReadyResolve = resolve; });
+
 if (FIREBASE_READY && typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+    auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+        if (user) authReadyResolve(user);
+    });
+
+    // Anonymous sign-in gives every regular player a stable, Rules-verifiable
+    // identity without needing a real account. The admin signs in separately
+    // with a real email/password account (see admin.js / adminSignIn()),
+    // which REPLACES the anonymous session with a fixed, permanent UID.
+    if (!auth.currentUser) {
+        auth.signInAnonymously().catch(err => console.error('Anonymous sign-in failed:', err));
+    }
 }

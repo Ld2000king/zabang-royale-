@@ -202,7 +202,7 @@ function renderLobby(room) {
         const isSelf = pid === MP.playerId;
         listEl.innerHTML += `<div class="player-status${isSelf ? ' self' : ''}">
             <div class="status-avatar">${getAvatarById(p.avatarId).svg}</div>
-            <span>${p.name}${pid === room.hostId ? ' 👑' : ''}</span>
+            <span>${escapeHtml(p.name)}${pid === room.hostId ? ' 👑' : ''}</span>
         </div>`;
     });
 
@@ -393,7 +393,7 @@ function updateMultiplayerUI(room) {
         const dim = p.connected === false ? ' style="opacity:.5"' : '';
         statusEl.innerHTML += `<div class="player-status${isSelf ? ' self' : ''}"${dim}>
             <div class="status-avatar">${getAvatarById(p.avatarId).svg}</div>
-            <span>${isSelf ? 'אתה' : p.name}</span><span>${p.score || 0}</span>
+            <span>${isSelf ? 'אתה' : escapeHtml(p.name)}</span><span>${p.score || 0}</span>
         </div>`;
     });
     // keep my own big score display in sync with the server value

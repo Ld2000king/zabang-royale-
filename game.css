@@ -1141,6 +1141,37 @@
     color: white;
 }
 
+.sub-status {
+    font-size: 0.85em;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+.sub-pending {
+    color: #a17a00;
+    background: rgba(255, 214, 10, 0.2);
+}
+
+.sub-approved {
+    color: var(--neon-lime-deep);
+    background: rgba(57, 255, 106, 0.15);
+}
+
+.admin-section {
+    margin-top: 25px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(0, 229, 255, 0.08));
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.admin-section h3 {
+    font-family: var(--font-display);
+    color: var(--neon-purple);
+    margin-bottom: 12px;
+}
+
 /* ===== Shop note ===== */
 .shop-note {
     text-align: center;
