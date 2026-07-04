@@ -606,7 +606,7 @@ function updateMultiplayerUI(room) {
 // ---- power-ups (multiplayer variants) --------------------------------------
 
 function useMultiplayerHint() {
-    if (!canPayForHint()) return;
+    if (!canPayForItem('hint')) return;
 
     let indices = findWordOnBoard();
     if (indices.length === 0) { autoShuffleIfExhausted(); indices = findWordOnBoard(); if (indices.length === 0) return; }
@@ -614,7 +614,7 @@ function useMultiplayerHint() {
     const word = indices.map(i => currentGame.board[i]).join('');
     const points = HEBREW_DICTIONARY[word];
 
-    consumeHintPayment();
+    consumeItemPayment('hint');
     currentGame.foundWords.add(word);
     currentGame.playerScore += points;
     document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
@@ -632,14 +632,14 @@ function useMultiplayerHint() {
 
 // freeze the current highest-scoring opponent for 8 seconds (on their device)
 function useMultiplayerFreeze() {
-    if (!hasInfiniteCoins() && gameState.coins < 40) { showMessage('אין מספיק מטבעות! (הקפאה עולה 40)', 'error'); return; }
+    if (!canPayForItem('freezeOpponents')) return;
     const players = (MP.room || {}).players || {};
     const opponents = Object.entries(players)
         .filter(([pid, p]) => pid !== MP.playerId && !p.eliminated && p.connected !== false)
         .sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
     if (opponents.length === 0) { showMessage('אין יריבים להקפיא', 'warning'); return; }
 
-    if (!hasInfiniteCoins()) gameState.coins -= 40;
+    consumeItemPayment('freezeOpponents');
     saveGameState();
     updateHomeUI();
 

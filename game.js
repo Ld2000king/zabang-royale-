@@ -70,11 +70,11 @@ const HEBREW_DICTIONARY = {
 };
 
 const SHOP_ITEMS = [
-    { icon: 'hint', name: 'רמז', desc: 'מסמן בלוח מילה שעוד לא מצאת', cost: 20 },
-    { icon: 'shuffle', name: 'ערבב לוח', desc: 'מחליף את אותיות הלוח', cost: 10 },
-    { icon: 'freeze', name: 'הקפא זמן', desc: 'מקפיא את השעון ל-5 שניות', cost: 30 },
-    { icon: 'freezeOpponents', name: 'הקפא יריבים', desc: 'באטל רויאל: מקפיא את הבוטים ל-8 שניות', cost: 40 },
-    { icon: 'tornado', name: 'ערבב ליריבים', desc: 'באטל רויאל: חותך את ניקוד הבוטים בחצי', cost: 25 }
+    { key: 'hint', icon: 'hint', name: 'רמז', desc: 'מסמן בלוח מילה שעוד לא מצאת', cost: 20 },
+    { key: 'shuffle', icon: 'shuffle', name: 'ערבב לוח', desc: 'מחליף את אותיות הלוח', cost: 10 },
+    { key: 'freeze', icon: 'freeze', name: 'הקפא זמן', desc: 'מקפיא את השעון ל-5 שניות', cost: 30 },
+    { key: 'freezeOpponents', icon: 'freezeOpponents', name: 'הקפא יריבים', desc: 'באטל רויאל: מקפיא את הבוטים ל-8 שניות', cost: 40 },
+    { key: 'tornado', icon: 'tornado', name: 'ערבב ליריבים', desc: 'באטל רויאל: חותך את ניקוד הבוטים בחצי', cost: 25 }
 ];
 
 const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
@@ -83,7 +83,7 @@ const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
 let gameState = {
     playerName: 'שחקן',
     coins: 100,
-    hints: 3,
+    inventory: { hint: 3, shuffle: 0, freeze: 0, freezeOpponents: 0, tornado: 0 },
     totalScore: 0,
     gamesPlayed: 0,
     level: 1,
@@ -128,8 +128,16 @@ function loadGameState() {
     const saved = localStorage.getItem('zabangState');
     if (saved) gameState = JSON.parse(saved);
     if (!gameState.avatarId) gameState.avatarId = 'dan';
-    // saves created before the shop hint-inventory existed lack this field
-    if (typeof gameState.hints !== 'number') gameState.hints = 3;
+    if (!gameState.inventory) gameState.inventory = {};
+    // migrate the old single-counter hint field (pre-multi-item inventory) into the new shape
+    if (typeof gameState.hints === 'number') {
+        gameState.inventory.hint = gameState.hints;
+        delete gameState.hints;
+    }
+    // make sure every shop item (including ones added after a save was created) has a counter
+    SHOP_ITEMS.forEach(item => {
+        if (typeof gameState.inventory[item.key] !== 'number') gameState.inventory[item.key] = 0;
+    });
 }
 
 function saveGameState() {
@@ -575,26 +583,32 @@ function showGameOverDialog() {
 
 // Power-ups
 
-// Hints are paid from the shop-bought inventory first, then coins.
-// Split into "can pay" / "consume" so the charge only happens after a
-// hint word was actually found on the board.
-function canPayForHint() {
-    if (gameState.hints > 0 || hasInfiniteCoins() || gameState.coins >= 20) return true;
-    showMessage('אין מספיק מטבעות! (רמז עולה 20)', 'error');
+function getShopItem(key) {
+    return SHOP_ITEMS.find(i => i.key === key);
+}
+
+// Every power-up is paid from its own shop-bought inventory slot first, then
+// coins. Split into "can pay" / "consume" so the charge only happens after
+// the power-up's effect was actually applied (e.g. a hint word was found).
+function canPayForItem(key) {
+    const item = getShopItem(key);
+    if (gameState.inventory[key] > 0 || hasInfiniteCoins() || gameState.coins >= item.cost) return true;
+    showMessage(`אין מספיק מטבעות! (${item.name} עולה ${item.cost})`, 'error');
     return false;
 }
 
-function consumeHintPayment() {
-    if (gameState.hints > 0) {
-        gameState.hints--;
-        showMessage(`נוצל רמז מהמלאי (נשארו ${gameState.hints})`, 'info');
+function consumeItemPayment(key) {
+    const item = getShopItem(key);
+    if (gameState.inventory[key] > 0) {
+        gameState.inventory[key]--;
+        showMessage(`${item.name} נוצל מהמלאי (נשארו ${gameState.inventory[key]})`, 'info');
         return;
     }
-    if (!hasInfiniteCoins()) gameState.coins -= 20;
+    if (!hasInfiniteCoins()) gameState.coins -= item.cost;
 }
 
 function useHint() {
-    if (!canPayForHint()) return;
+    if (!canPayForItem('hint')) return;
 
     let indices = findWordOnBoard();
     if (indices.length === 0) {
@@ -606,7 +620,7 @@ function useHint() {
     const word = indices.map(i => currentGame.board[i]).join('');
     const points = HEBREW_DICTIONARY[word];
 
-    consumeHintPayment();
+    consumeItemPayment('hint');
     currentGame.foundWords.add(word);
     currentGame.score += points;
     document.getElementById('scoreDisplay').textContent = currentGame.score;
@@ -660,25 +674,20 @@ function findWordOnBoard() {
 }
 
 function useShuffle() {
-    if (!hasInfiniteCoins() && gameState.coins < 10) {
-        showMessage('אין מטבעות!', 'error');
-        return;
-    }
+    if (!canPayForItem('shuffle')) return;
 
-    if (!hasInfiniteCoins()) gameState.coins -= 10;
+    consumeItemPayment('shuffle');
     currentGame.board = currentGame.board.sort(() => Math.random() - 0.5);
     renderBoard(currentGame.mode === 'single' ? 'board' : 'battleBoard');
+    saveGameState();
     updateHomeUI();
     showMessage('הלוח עורבב!', 'success');
 }
 
 function useFreeze() {
-    if (!hasInfiniteCoins() && gameState.coins < 30) {
-        showMessage('אין מטבעות!', 'error');
-        return;
-    }
+    if (!canPayForItem('freeze')) return;
 
-    if (!hasInfiniteCoins()) gameState.coins -= 30;
+    consumeItemPayment('freeze');
     currentGame.freezeLeft += 5;
     saveGameState();
     updateHomeUI();
@@ -686,11 +695,9 @@ function useFreeze() {
 }
 
 function useBattleFreeze() {
-    if (!hasInfiniteCoins() && gameState.coins < 40) {
-        showMessage('אין מטבעות!', 'error');
-        return;
-    }
-    if (!hasInfiniteCoins()) gameState.coins -= 40;
+    if (!canPayForItem('freezeOpponents')) return;
+
+    consumeItemPayment('freezeOpponents');
     battleState.botsFrozenSeconds = 8;
     saveGameState();
     updateHomeUI();
@@ -698,21 +705,20 @@ function useBattleFreeze() {
 }
 
 function useBattleShuffle() {
-    if (!hasInfiniteCoins() && gameState.coins < 25) {
-        showMessage('אין מטבעות!', 'error');
-        return;
-    }
-    if (!hasInfiniteCoins()) gameState.coins -= 25;
+    if (!canPayForItem('tornado')) return;
+
+    consumeItemPayment('tornado');
     for (let bot of battleState.players) {
         bot.score = Math.floor(bot.score * 0.5);
     }
+    saveGameState();
     updateHomeUI();
     updateBattleUI();
     showMessage('הבוטים מבולבלים!', 'success');
 }
 
 function useBattleHint() {
-    if (!canPayForHint()) return;
+    if (!canPayForItem('hint')) return;
 
     let indices = findWordOnBoard();
     if (indices.length === 0) {
@@ -724,7 +730,7 @@ function useBattleHint() {
     const word = indices.map(i => currentGame.board[i]).join('');
     const points = HEBREW_DICTIONARY[word];
 
-    consumeHintPayment();
+    consumeItemPayment('hint');
     currentGame.foundWords.add(word);
     currentGame.playerScore += points;
     document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
@@ -902,19 +908,16 @@ function handleNextRoundClick() {
 // are still paid with coins at the moment of use, during the game
 function renderShop() {
     const shopEl = document.getElementById('shopItems');
-    shopEl.innerHTML = `<p class="shop-note">רמזים אפשר לקנות מראש למלאי; שאר העזרים נקנים במטבעות תוך כדי משחק</p>`;
+    shopEl.innerHTML = `<p class="shop-note">כל העזרים אפשר לקנות מראש למלאי - פשוט לחצו על "קנה"</p>`;
 
-    SHOP_ITEMS.forEach((item, i) => {
-        const isHint = i === 0;
+    SHOP_ITEMS.forEach(item => {
         shopEl.innerHTML += `
             <div class="shop-item">
                 <div class="item-info">
-                    <h3>${icon(item.icon)} ${item.name}${isHint ? ` <span class="owned-count">במלאי: ${gameState.hints}</span>` : ''}</h3>
+                    <h3>${icon(item.icon)} ${item.name} <span class="owned-count">במלאי: ${gameState.inventory[item.key]}</span></h3>
                     <p>${item.desc}</p>
                 </div>
-                ${isHint
-                    ? `<button class="buy-btn" onclick="buyHint()">${icon('coin', 'coin-icon')} ${item.cost} קנה</button>`
-                    : `<span class="shop-item-price">${icon('coin', 'coin-icon')} ${item.cost}</span>`}
+                <button class="buy-btn" onclick="buyItem('${item.key}')">${icon('coin', 'coin-icon')} ${item.cost} קנה</button>
             </div>
         `;
     });
@@ -932,19 +935,22 @@ function showConfirm(message, onYes) {
     no.onclick = close;
 }
 
-function buyHint() {
-    const cost = SHOP_ITEMS[0].cost;
-    if (!hasInfiniteCoins() && gameState.coins < cost) {
+// buys one unit of any shop item (key = SHOP_ITEMS[].key) into its own
+// inventory slot; the confirmation text/price are looked up per-item so
+// this stays generic as new power-ups get added
+function buyItem(key) {
+    const item = getShopItem(key);
+    if (!hasInfiniteCoins() && gameState.coins < item.cost) {
         showMessage('אין מספיק מטבעות!', 'error');
         return;
     }
-    showConfirm(`האם אתה בטוח? קניית רמז ב-${cost} מטבעות`, () => {
-        if (!hasInfiniteCoins()) gameState.coins -= cost;
-        gameState.hints++;
+    showConfirm(`האם אתה בטוח? קניית ${item.name} ב-${item.cost} מטבעות`, () => {
+        if (!hasInfiniteCoins()) gameState.coins -= item.cost;
+        gameState.inventory[key]++;
         saveGameState();
         updateHomeUI();
         renderShop();
-        showMessage(`רמז נוסף למלאי! (${gameState.hints})`, 'success');
+        showMessage(`${item.name} נוסף למלאי! (${gameState.inventory[key]})`, 'success');
     });
 }
 
