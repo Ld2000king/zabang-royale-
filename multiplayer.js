@@ -34,6 +34,15 @@ function mpAvailable() {
     return true;
 }
 
+// Wait for the anonymous sign-in to complete, but don't hang forever if it
+// never does (e.g. network hiccup, or Anonymous auth disabled in Console).
+function waitForAuth() {
+    return Promise.race([
+        authReady,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('auth-timeout')), 8000))
+    ]);
+}
+
 function getMyPlayerId() {
     let id = sessionStorage.getItem('zabangPlayerId');
     if (!id) {
@@ -71,6 +80,12 @@ function showJoinScreen() {
 
 async function createRoom() {
     if (!mpAvailable()) return;
+    try {
+        await waitForAuth(); // Security Rules require auth != null - wait for anonymous sign-in first
+    } catch (e) {
+        showMessage('החיבור ל-Firebase נכשל - נסה שוב', 'error');
+        return;
+    }
     MP.playerId = getMyPlayerId();
     MP.isHost = true;
 
@@ -107,6 +122,12 @@ function joinRoomFromInput() {
 
 async function joinRoom(code) {
     if (!mpAvailable()) return;
+    try {
+        await waitForAuth(); // Security Rules require auth != null - wait for anonymous sign-in first
+    } catch (e) {
+        showMessage('החיבור ל-Firebase נכשל - נסה שוב', 'error');
+        return;
+    }
     MP.playerId = getMyPlayerId();
     MP.isHost = false;
 
