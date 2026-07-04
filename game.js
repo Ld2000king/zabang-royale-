@@ -111,7 +111,8 @@ let gameState = {
     level: 1,
     xp: 0,
     xpToNextLevel: 100,
-    avatarId: 'dan'
+    avatarId: 'dan',
+    trophies: 0
 };
 
 let currentGame = {
@@ -151,6 +152,7 @@ function loadGameState() {
     const saved = localStorage.getItem('zabangState');
     if (saved) gameState = JSON.parse(saved);
     if (!gameState.avatarId) gameState.avatarId = 'dan';
+    if (typeof gameState.trophies !== 'number') gameState.trophies = 0;
     if (!gameState.inventory) gameState.inventory = {};
     // migrate the old single-counter hint field (pre-multi-item inventory) into the new shape
     if (typeof gameState.hints === 'number') {
@@ -175,9 +177,22 @@ function coinsText() {
     return hasInfiniteCoins() ? '∞' : gameState.coins;
 }
 
+// Trophies track ranked standing in random 1v1 multiplayer specifically
+// (see showMultiplayerResult in multiplayer.js) - never let them go negative,
+// same convention as most trophy/rank systems.
+function awardTrophies(delta, label) {
+    gameState.trophies = Math.max(0, (gameState.trophies || 0) + delta);
+    saveGameState();
+    updateHomeUI();
+    if (delta !== 0) {
+        showMessage(`${delta > 0 ? '+' : ''}${delta} גביעים (${label})`, delta > 0 ? 'success' : 'error');
+    }
+}
+
 function updateHomeUI() {
     document.getElementById('playerName').textContent = gameState.playerName;
     document.getElementById('homeCoins').textContent = coinsText();
+    document.getElementById('homeTrophies').textContent = gameState.trophies;
     document.getElementById('levelBadge').textContent = `רמה ${gameState.level}`;
     document.getElementById('shopCoins').textContent = coinsText();
     document.getElementById('homeAvatar').innerHTML = getAvatarById(gameState.avatarId).svg;
@@ -853,6 +868,11 @@ function startBotAI() {
 }
 
 function endBattleRound() {
+    // victoryScreen is shared with real multiplayer results, where this button
+    // can be visible - bots mode never offers a matchmaking "play again"
+    const playAgainBtn = document.getElementById('playAgainRandomBtn');
+    if (playAgainBtn) playAgainBtn.style.display = 'none';
+
     // Only the player + still-active bots compete for the round's elimination.
     // (Including already-eliminated bots let their frozen low score win the
     // "lowest" spot again, so no NEW bot ever got removed after round 1.)
@@ -991,6 +1011,7 @@ function renderProfile() {
         <p><strong>שם:</strong> ${escapeHtml(gameState.playerName)} <button class="rename-btn" onclick="renamePlayer()" title="ערוך שם">${icon('pencil')}</button></p>
         <p><strong>רמה:</strong> ${gameState.level}</p>
         <p><strong>מטבעות:</strong> ${coinsText()}</p>
+        <p><strong>גביעים:</strong> ${gameState.trophies}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
         <p><strong>משחקים:</strong> ${gameState.gamesPlayed}</p>
     `;

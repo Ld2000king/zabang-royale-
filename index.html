@@ -32,9 +32,15 @@
                             <div class="level-badge" id="levelBadge">רמה 1</div>
                         </div>
                     </div>
-                    <div class="coins-display">
-                        <span class="coin-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="#ffd60a" stroke="#ffb700" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#ffb700" stroke-width="1.5"/></svg></span>
-                        <span class="coin-amount" id="homeCoins">100</span>
+                    <div class="player-stats">
+                        <div class="coins-display">
+                            <span class="coin-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="#ffd60a" stroke="#ffb700" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#ffb700" stroke-width="1.5"/></svg></span>
+                            <span class="coin-amount" id="homeCoins">100</span>
+                        </div>
+                        <div class="trophies-display">
+                            <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span>
+                            <span class="trophy-amount" id="homeTrophies">0</span>
+                        </div>
                     </div>
                 </div>
 
@@ -265,6 +271,7 @@
                 <h1 id="victoryTitle"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span> ניצחת! <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></span></h1>
                 <p id="victorySubtitle">שרדת את כל 5 הסיבובים!</p>
                 <div class="victory-rewards" id="victoryRewards"></div>
+                <button class="btn-large green-btn" id="playAgainRandomBtn" onclick="playAgainRandom()" style="display:none;"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 a8 8 0 1 1 2.6 5.9"/><path d="M4 18 V13 H9"/></svg></span> שחק שוב</button>
                 <button class="btn-large blue-btn" onclick="goHome()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></span> מסך הבית</button>
             </div>
         </div>

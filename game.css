@@ -76,6 +76,13 @@
     width: fit-content;
 }
 
+.player-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
 .coins-display {
     display: flex;
     align-items: center;
@@ -86,6 +93,20 @@
 
 .coin-icon {
     font-size: 1.5em;
+}
+
+.trophies-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--neon-cyan-deep, #00b8d4);
+}
+
+.trophies-display .icon svg {
+    width: 1.1em;
+    height: 1.1em;
 }
 
 .button-group {

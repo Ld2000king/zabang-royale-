@@ -20,7 +20,8 @@ const MP = {
     timer: null,       // local countdown interval
     room: null,        // latest room snapshot
     matchType: null,   // 'random' while this room came from random matchmaking
-    autoStarting: false // guards against double-firing the random-match auto-start
+    autoStarting: false, // guards against double-firing the random-match auto-start
+    resultApplied: false // guards against re-awarding coins/trophies on repeat 'finished' snapshots
 };
 
 const ROUND_SECONDS = 60;
@@ -507,20 +508,37 @@ function endMultiplayerRound() {
     const [loserId] = active[0] || [];
 
     const isFinal = (MP.room.currentRound || 1) >= (MP.room.totalRounds || TOTAL_ROUNDS);
-    const updates = {};
-    if (loserId) updates['players/' + loserId + '/eliminated'] = true;
-
     const remainingAfter = active.length - 1;
-    if (isFinal || remainingAfter <= 1) {
-        // winner = the highest scorer among the still-active (non-loser) players
-        const survivors = active.filter(([pid]) => pid !== loserId);
-        survivors.sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
+    const updates = {};
+
+    // A genuine head-to-head (exactly 2 still active - always true for a
+    // random-matched 1v1, and also true for the deciding round of a larger
+    // battle once it's down to the last two) that ends tied - with both
+    // players actually connected - has no legitimate loser to eliminate.
+    // Call it a draw instead of letting the sort's stable tie-break
+    // arbitrarily pick one.
+    const isTiedHeadToHead = (isFinal || remainingAfter <= 1) && active.length === 2
+        && active.every(([, p]) => p.connected !== false)
+        && (active[0][1].score || 0) === (active[1][1].score || 0);
+
+    if (isTiedHeadToHead) {
         updates['status'] = 'finished';
-        updates['winnerId'] = survivors.length ? survivors[0][0] : loserId;
-        updates['loserId'] = loserId || '';
+        updates['isDraw'] = true;
+        updates['winnerId'] = '';
+        updates['loserId'] = '';
     } else {
-        updates['status'] = 'roundEnd';
-        updates['loserId'] = loserId || '';
+        if (loserId) updates['players/' + loserId + '/eliminated'] = true;
+        if (isFinal || remainingAfter <= 1) {
+            // winner = the highest scorer among the still-active (non-loser) players
+            const survivors = active.filter(([pid]) => pid !== loserId);
+            survivors.sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
+            updates['status'] = 'finished';
+            updates['winnerId'] = survivors.length ? survivors[0][0] : loserId;
+            updates['loserId'] = loserId || '';
+        } else {
+            updates['status'] = 'roundEnd';
+            updates['loserId'] = loserId || '';
+        }
     }
     MP.roomRef.update(updates);
 }
@@ -552,26 +570,50 @@ function showMultiplayerRoundEnd(room) {
 }
 
 function showMultiplayerResult(room) {
-    const iWon = room.winnerId === MP.playerId;
     const title = document.getElementById('victoryTitle');
     const subtitle = document.getElementById('victorySubtitle');
     const rewards = document.getElementById('victoryRewards');
+    const isRandom1v1 = room.matchType === 'random';
 
-    if (iWon) {
+    const playAgainBtn = document.getElementById('playAgainRandomBtn');
+    if (playAgainBtn) playAgainBtn.style.display = isRandom1v1 ? 'block' : 'none';
+
+    // the room's 'finished' snapshot can re-fire (e.g. an opponent's presence
+    // flag changing) - only apply coins/trophies once per match
+    const alreadyApplied = MP.resultApplied;
+    MP.resultApplied = true;
+
+    if (room.isDraw) {
+        title.textContent = 'תיקו!';
+        subtitle.textContent = 'שני הצדדים סיימו בניקוד שווה';
+        rewards.innerHTML = '';
+        if (!alreadyApplied && isRandom1v1) awardTrophies(0, 'תיקו');
+    } else if (room.winnerId === MP.playerId) {
         title.innerHTML = `${icon('trophy')} ניצחת! ${icon('trophy')}`;
-        subtitle.textContent = 'ניצחת את כל החברים!';
-        gameState.coins += 100;
-        saveGameState();
-        updateHomeUI();
+        subtitle.textContent = isRandom1v1 ? 'ניצחת את היריב!' : 'ניצחת את כל החברים!';
         rewards.innerHTML = `<div class="reward-box"><span class="coin-icon icon">${ICONS.coin}</span><span>+100 מטבעות!</span></div>`;
         launchConfetti();
+        if (!alreadyApplied) {
+            gameState.coins += 100;
+            saveGameState();
+            updateHomeUI();
+            if (isRandom1v1) awardTrophies(20, 'ניצחון');
+        }
     } else {
         const winnerName = (room.players[room.winnerId] || {}).name || 'שחקן אחר';
         title.innerHTML = `${icon('close')} המשחק נגמר ${icon('close')}`;
         subtitle.textContent = `${winnerName} ניצח/ה את המשחק`;
         rewards.innerHTML = '';
+        if (!alreadyApplied && isRandom1v1) awardTrophies(-10, 'הפסד');
     }
     showScreen('victoryScreen');
+}
+
+// Immediately re-enters random matchmaking from the match-end screen,
+// without routing back through the home/mode-selection menus.
+function playAgainRandom() {
+    leaveMultiplayerRoom(); // detach the finished room's listener, clear matchmaking state
+    findRandomGame();
 }
 
 // ---- word submission (called from game.js endDrag) -------------------------
@@ -702,5 +744,6 @@ function leaveMultiplayerRoom() {
     MP.lastRound = 0;
     MP.matchType = null;
     MP.autoStarting = false;
+    MP.resultApplied = false;
     if (currentGame.mode === 'multiplayer') currentGame.mode = null;
 }
