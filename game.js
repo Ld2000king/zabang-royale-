@@ -167,8 +167,16 @@ let gameState = {
     xpToNextLevel: 100,
     avatarId: 'dan',
     trophies: 0,
-    preferredTheme: 0
+    preferredTheme: 0,
+    ownedAvatars: []
 };
+
+// price of a premium ("cooler") profile picture in the shop
+const AVATAR_COST = 3000;
+
+// words the admin has rejected (public rejected_words node), used to prune a
+// player's local submission list. Populated by a Firebase listener in admin.js.
+const rejectedWordsSet = new Set();
 
 let currentGame = {
     mode: null, // 'single' or 'battle'
@@ -209,6 +217,7 @@ function loadGameState() {
     if (!gameState.avatarId) gameState.avatarId = 'dan';
     if (typeof gameState.trophies !== 'number') gameState.trophies = 0;
     if (typeof gameState.preferredTheme !== 'number') gameState.preferredTheme = 0;
+    if (!Array.isArray(gameState.ownedAvatars)) gameState.ownedAvatars = [];
     if (!gameState.inventory) gameState.inventory = {};
     // migrate the old single-counter hint field (pre-multi-item inventory) into the new shape
     if (typeof gameState.hints === 'number') {
@@ -1074,6 +1083,29 @@ function renderShop() {
             </div>
         `;
     });
+
+    // Premium ("cooler") profile pictures
+    const premiumAvatars = AVATARS.filter(a => a.premium);
+    if (premiumAvatars.length) {
+        shopEl.innerHTML += `<h3 class="shop-section-title">תמונות פרופיל מגניבות</h3>`;
+        premiumAvatars.forEach(a => {
+            const owned = isAvatarOwned(a.id);
+            shopEl.innerHTML += `
+                <div class="shop-item">
+                    <div class="item-info item-info-avatar">
+                        <div class="shop-avatar">${a.svg}</div>
+                        <div>
+                            <h3>${a.name}</h3>
+                            <p>תמונת פרופיל מיוחדת</p>
+                        </div>
+                    </div>
+                    ${owned
+                        ? `<span class="shop-owned">${icon('check')} בבעלותך</span>`
+                        : `<button class="buy-btn" onclick="buyAvatar('${a.id}')">${icon('coin', 'coin-icon')} ${AVATAR_COST} קנה</button>`}
+                </div>
+            `;
+        });
+    }
 }
 
 // generic yes/no confirmation modal (the callback runs only on "yes")
@@ -1104,6 +1136,32 @@ function buyItem(key) {
         updateHomeUI();
         renderShop();
         showMessage(`${item.name} נוסף למלאי! (${gameState.inventory[key]})`, 'success');
+    });
+}
+
+// A profile picture is available if it's a free (non-premium) one, the admin
+// account (owns everything), or a premium one the player has bought.
+function isAvatarOwned(id) {
+    const a = getAvatarById(id);
+    if (!a.premium) return true;
+    if (isAdminAccount()) return true;
+    return (gameState.ownedAvatars || []).includes(id);
+}
+
+function buyAvatar(id) {
+    const a = getAvatarById(id);
+    if (isAvatarOwned(id)) { showMessage('כבר בבעלותך', 'info'); return; }
+    if (!hasInfiniteCoins() && gameState.coins < AVATAR_COST) {
+        showMessage('אין מספיק מטבעות!', 'error');
+        return;
+    }
+    showConfirm(`האם אתה בטוח? קניית התמונה "${a.name}" ב-${AVATAR_COST} מטבעות`, () => {
+        if (!hasInfiniteCoins()) gameState.coins -= AVATAR_COST;
+        if (!gameState.ownedAvatars.includes(id)) gameState.ownedAvatars.push(id);
+        saveGameState();
+        updateHomeUI();
+        renderShop();
+        showMessage(`התמונה "${a.name}" נוספה לאוסף!`, 'success');
     });
 }
 
@@ -1143,7 +1201,21 @@ function renamePlayer() {
 function renderSubmissions() {
     const el = document.getElementById('submissionsList');
     if (el) {
-        const subs = JSON.parse(localStorage.getItem('zabangSubmissions') || '[]');
+        let subs = JSON.parse(localStorage.getItem('zabangSubmissions') || '[]');
+
+        // Once the admin has decided on a word it should leave the profile:
+        // approved words end up in the dictionary, rejected words appear in
+        // the public rejected_words list. Only genuinely-pending words stay.
+        const remaining = subs.filter(s => {
+            const norm = typeof normalizeFinals === 'function' ? normalizeFinals(s.word) : s.word;
+            const approved = HEBREW_DICTIONARY[norm] !== undefined;
+            const rejected = rejectedWordsSet.has(norm) || rejectedWordsSet.has(s.word);
+            return !approved && !rejected;
+        });
+        if (remaining.length !== subs.length) {
+            subs = remaining;
+            localStorage.setItem('zabangSubmissions', JSON.stringify(subs));
+        }
 
         if (subs.length === 0) {
             el.innerHTML = '<p class="no-subs">אין מילים ממתינות לבדיקה</p>';
@@ -1152,10 +1224,9 @@ function renderSubmissions() {
             subs.forEach(s => {
                 const row = document.createElement('div');
                 row.className = 'submission-row';
-                const approved = HEBREW_DICTIONARY[s.word] !== undefined;
                 row.innerHTML = `
                     <span class="sub-word">${escapeHtml(s.word)}</span>
-                    <span class="sub-status ${approved ? 'sub-approved' : 'sub-pending'}">${approved ? icon('check') + ' אושרה' : 'ממתינה לאישור'}</span>`;
+                    <span class="sub-status sub-pending">ממתינה לאישור</span>`;
                 el.appendChild(row);
             });
         }
@@ -1171,15 +1242,23 @@ function renderAvatarPicker() {
     grid.innerHTML = '';
 
     AVATARS.forEach(avatar => {
+        const owned = isAvatarOwned(avatar.id);
         const option = document.createElement('div');
-        option.className = 'avatar-option' + (avatar.id === gameState.avatarId ? ' avatar-selected' : '');
-        option.innerHTML = `${avatar.svg}<span class="avatar-name">${avatar.name}</span>`;
-        option.onclick = () => selectAvatar(avatar.id);
+        option.className = 'avatar-option'
+            + (avatar.id === gameState.avatarId ? ' avatar-selected' : '')
+            + (owned ? '' : ' avatar-locked');
+        option.innerHTML = `${avatar.svg}<span class="avatar-name">${avatar.name}</span>`
+            + (owned ? '' : `<span class="avatar-lock">🔒</span>`);
+        option.onclick = () => {
+            if (owned) selectAvatar(avatar.id);
+            else showMessage('תמונה נעולה - ניתן לרכוש בחנות', 'warning');
+        };
         grid.appendChild(option);
     });
 }
 
 function selectAvatar(id) {
+    if (!isAvatarOwned(id)) { showMessage('תמונה נעולה - ניתן לרכוש בחנות', 'warning'); return; }
     gameState.avatarId = id;
     saveGameState();
     renderAvatarPicker();

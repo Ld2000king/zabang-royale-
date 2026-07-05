@@ -130,7 +130,7 @@ function renderPendingRequests(requests) {
                 <button class="reject-btn">${icon('close')} דחה</button>
             </span>`;
         row.querySelector('.approve-btn').onclick = () => approvePendingWord(reqId, req.word, points);
-        row.querySelector('.reject-btn').onclick = () => rejectPendingWord(reqId);
+        row.querySelector('.reject-btn').onclick = () => rejectPendingWord(reqId, req.word);
         el.appendChild(row);
     });
 }
@@ -146,9 +146,14 @@ function approvePendingWord(reqId, word, points) {
         .catch(err => showMessage('שגיאה: ' + err.message, 'error'));
 }
 
-function rejectPendingWord(reqId) {
+function rejectPendingWord(reqId, word) {
     db.ref('pending_requests/' + reqId).remove()
-        .then(() => showMessage('הבקשה נדחתה', 'warning'))
+        .then(() => {
+            // record a public rejection so the submitter's device can drop it
+            // from their profile list (best-effort; needs a rejected_words rule)
+            if (word) db.ref('rejected_words/' + word).set(true).catch(() => {});
+            showMessage('הבקשה נדחתה', 'warning');
+        })
         .catch(err => showMessage('שגיאה: ' + err.message, 'error'));
 }
 
@@ -168,8 +173,31 @@ function loadApprovedWordsFromFirebase() {
     });
 }
 
+// Mirror of loadApprovedWordsFromFirebase for rejections: populate the shared
+// rejectedWordsSet (defined in game.js) so every player's profile can prune
+// words the admin declined. Degrades gracefully if the rejected_words rule
+// isn't configured yet (approval-based pruning still works without it).
+function loadRejectedWordsFromFirebase() {
+    if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY || !db) return;
+    if (typeof rejectedWordsSet === 'undefined') return;
+    db.ref('rejected_words').on('value', snap => {
+        rejectedWordsSet.clear();
+        Object.keys(snap.val() || {}).forEach(w => {
+            rejectedWordsSet.add(w);
+            if (typeof normalizeFinals === 'function') rejectedWordsSet.add(normalizeFinals(w));
+        });
+        const profileEl = document.getElementById('profileScreen');
+        if (profileEl && profileEl.classList.contains('active') && typeof renderSubmissions === 'function') {
+            renderSubmissions();
+        }
+    }, err => {
+        console.warn('rejected_words not readable (add a Security Rule to enable rejection cleanup):', err.message);
+    });
+}
+
 if (typeof authReady !== 'undefined') {
     authReady.then(loadApprovedWordsFromFirebase);
+    authReady.then(loadRejectedWordsFromFirebase);
 }
 
 // A persisted admin session is restored asynchronously after page load, so

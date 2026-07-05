@@ -170,6 +170,90 @@ const AVATARS = [
             <circle cx="50" cy="7" r="4" fill="#ffee58"/>
             <path d="M20 100 Q20 78 50 78 Q80 78 80 100 Z" fill="#9575cd"/>
         </svg>`
+    },
+
+    // ===== Premium ("cooler") avatars - bought in the shop (premium: true) =====
+    {
+        id: 'king',
+        name: 'מלך',
+        premium: true,
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#1a237e"/>
+            <circle cx="50" cy="53" r="25" fill="#ffcc99"/>
+            <circle cx="41" cy="51" r="3.2" fill="#222"/>
+            <circle cx="59" cy="51" r="3.2" fill="#222"/>
+            <path d="M42 61 Q50 67 58 61" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M30 34 L34 21 L42 31 L50 16 L58 31 L66 21 L70 34 Z" fill="#ffd700" stroke="#e6a700" stroke-width="1.5" stroke-linejoin="round"/>
+            <rect x="30" y="34" width="40" height="6" rx="1.5" fill="#ffd700" stroke="#e6a700" stroke-width="1"/>
+            <circle cx="50" cy="24" r="2.6" fill="#ff5252"/>
+            <circle cx="34" cy="25" r="2" fill="#40c4ff"/>
+            <circle cx="66" cy="25" r="2" fill="#40c4ff"/>
+            <path d="M20 100 Q20 76 50 76 Q80 76 80 100 Z" fill="#c62828"/>
+        </svg>`
+    },
+    {
+        id: 'cyber',
+        name: 'סייבר',
+        premium: true,
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#0d1b2a"/>
+            <rect x="26" y="28" width="48" height="44" rx="12" fill="#1b2a3a" stroke="#00e5ff" stroke-width="2"/>
+            <rect x="32" y="40" width="36" height="11" rx="5.5" fill="#00e5ff" opacity="0.9"/>
+            <rect x="35" y="42.5" width="9" height="6" rx="3" fill="#0d1b2a"/>
+            <rect x="56" y="42.5" width="9" height="6" rx="3" fill="#0d1b2a"/>
+            <path d="M37 61 H63" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"/>
+            <line x1="50" y1="28" x2="50" y2="17" stroke="#00e5ff" stroke-width="2"/>
+            <circle cx="50" cy="15" r="3" fill="#00e5ff"/>
+            <path d="M20 100 Q20 76 50 76 Q80 76 80 100 Z" fill="#1b2a3a"/>
+        </svg>`
+    },
+    {
+        id: 'flame',
+        name: 'להבה',
+        premium: true,
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#3e0a00"/>
+            <path d="M50 14 Q64 30 60 44 Q72 40 68 56 Q66 74 50 79 Q34 74 32 56 Q28 40 40 44 Q36 30 50 14" fill="#ff6d00"/>
+            <path d="M50 27 Q58 38 55 48 Q62 46 58 58 Q56 68 50 71 Q44 68 42 58 Q38 46 45 48 Q42 38 50 27" fill="#ffca28"/>
+            <circle cx="43" cy="52" r="3" fill="#3e0a00"/>
+            <circle cx="57" cy="52" r="3" fill="#3e0a00"/>
+            <path d="M44 61 Q50 65 56 61" stroke="#3e0a00" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M20 100 Q20 78 50 78 Q80 78 80 100 Z" fill="#bf360c"/>
+        </svg>`
+    },
+    {
+        id: 'hero',
+        name: 'גיבור',
+        premium: true,
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#b71c1c"/>
+            <circle cx="50" cy="51" r="26" fill="#ffcc99"/>
+            <path d="M24 42 Q50 31 76 42 L74 52 Q62 56 50 56 Q38 56 26 52 Z" fill="#1a237e"/>
+            <ellipse cx="41" cy="47" rx="6" ry="4.2" fill="#fff"/>
+            <ellipse cx="59" cy="47" rx="6" ry="4.2" fill="#fff"/>
+            <path d="M42 63 Q50 69 58 63" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M20 100 Q20 76 50 76 Q80 76 80 100 Z" fill="#1a237e"/>
+        </svg>`
+    },
+    {
+        id: 'galaxy',
+        name: 'גלקסי',
+        premium: true,
+        svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#311b92"/>
+            <circle cx="50" cy="48" r="34" fill="#4527a0" opacity="0.7"/>
+            <circle cx="30" cy="28" r="1.5" fill="#fff"/>
+            <circle cx="70" cy="26" r="1.2" fill="#fff"/>
+            <circle cx="77" cy="52" r="1.5" fill="#fff"/>
+            <circle cx="23" cy="55" r="1.2" fill="#fff"/>
+            <circle cx="64" cy="72" r="1.3" fill="#fff"/>
+            <circle cx="50" cy="49" r="24" fill="#b388ff" opacity="0.35"/>
+            <circle cx="42" cy="47" r="3.6" fill="#fff"/>
+            <circle cx="58" cy="47" r="3.6" fill="#fff"/>
+            <circle cx="42" cy="47" r="1.6" fill="#311b92"/>
+            <circle cx="58" cy="47" r="1.6" fill="#311b92"/>
+            <path d="M43 58 Q50 63 57 58" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>`
     }
 ];
 
