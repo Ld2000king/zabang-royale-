@@ -191,15 +191,15 @@
 .mega-btn {
     position: relative;
     overflow: hidden;
-    padding: 18px;
+    padding: 22px 18px;
     font-family: var(--font-display);
-    font-size: 1.2em;
+    font-size: 1.25em;
     border: var(--border-thick) solid rgba(255, 255, 255, 0.5);
     border-radius: var(--radius-btn);
     cursor: pointer;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
     text-transform: uppercase;
 }
 
@@ -212,12 +212,15 @@
 }
 
 .mega-btn:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     filter: brightness(1.1);
 }
 
+/* Punchy, satisfying press feedback - the primary tactile signal on touch
+   devices, where :hover never really fires */
 .mega-btn:active {
-    transform: scale(0.96) translateY(-1px);
+    transform: scale(0.95);
+    filter: brightness(0.95);
 }
 
 .blue-btn {
@@ -241,6 +244,14 @@
     box-shadow: var(--glow-green);
 }
 
+/* Golden/yellow - reserved for the Shop, matching its "premium currency" feel */
+.gold-btn {
+    background: var(--grad-gold);
+    color: var(--text-dark);
+    text-shadow: none;
+    box-shadow: var(--glow-gold);
+}
+
 /* Game Mode Screen */
 .modal-content {
     background: var(--panel-light);
@@ -257,8 +268,10 @@
 .modal-content h2 {
     font-family: var(--font-display);
     font-size: 2.2em;
+    font-weight: 800;
     margin-bottom: 25px;
     color: var(--text-dark);
+    letter-spacing: -0.5px;
 }
 
 .mode-option {
@@ -266,12 +279,13 @@
     align-items: center;
     gap: 15px;
     padding: 20px;
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(57, 255, 106, 0.1));
     border: 2px solid rgba(0, 229, 255, 0.25);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
     margin-bottom: 15px;
+    box-shadow: var(--shadow-depth-sm);
 }
 
 .mode-option:hover {
@@ -279,6 +293,10 @@
     border-color: var(--neon-cyan);
     background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(57, 255, 106, 0.2));
     box-shadow: var(--glow-cyan);
+}
+
+.mode-option:active {
+    transform: scale(0.97);
 }
 
 .mode-icon {
@@ -293,6 +311,7 @@
 
 .mode-details h3 {
     font-size: 1.2em;
+    font-weight: 700;
     margin-bottom: 5px;
     color: #1a1a2e;
 }
@@ -308,20 +327,27 @@
     font-weight: bold;
 }
 
+/* Close/back/cancel - always red, a consistent "exit" signal across every
+   modal in the game */
 .close-modal-btn {
     width: 100%;
-    padding: 15px;
-    background: var(--grad-purple);
+    padding: 18px;
+    background: var(--grad-red);
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
     border: none;
     border-radius: var(--radius-btn);
-    font-weight: 700;
+    font-weight: 800;
     font-family: var(--font-display);
     cursor: pointer;
     font-size: 1.2em;
-    box-shadow: var(--glow-purple);
-    transition: all 0.2s ease;
+    box-shadow: var(--glow-red);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
+}
+
+.close-modal-btn:active {
+    transform: scale(0.95);
+    filter: brightness(0.95);
 }
 
 .close-modal-btn:hover {
@@ -356,13 +382,18 @@
     font-size: 1.5em;
     width: 50px;
     height: 50px;
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.3s;
+    box-shadow: var(--shadow-depth-sm);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
 }
 
 .exit-btn:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+.exit-btn:active {
+    transform: scale(0.92);
 }
 
 /* Shop/profile exit button sits on a light card, not the dark body - needs dark contrast */
@@ -381,7 +412,13 @@
 .help-btn {
     position: fixed;
     top: calc(16px + env(safe-area-inset-top));
-    left: calc(16px + env(safe-area-inset-left));
+    /* On real phones (viewport <= the app frame's max-width) this is just
+       16px from the true edge. On wider/desktop viewports, where the frame
+       floats centered with visible margins, this offsets by the frame's own
+       left margin so the button hugs the frame's corner instead of the
+       browser window's corner. max(0px, ...) collapses to 0 whenever the
+       frame is full-bleed. */
+    left: calc(16px + env(safe-area-inset-left) + max(0px, (100vw - var(--app-max-width)) / 2));
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.25);
     color: white;
@@ -390,7 +427,11 @@
     border-radius: 50%;
     cursor: pointer;
     z-index: 10;
-    transition: all 0.3s;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.help-btn:active {
+    transform: scale(0.9);
 }
 
 .help-btn:hover {
@@ -408,7 +449,7 @@
 
 .instructions-list li {
     background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(57, 255, 106, 0.08));
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     padding: 14px 16px;
     line-height: 1.5;
 }
@@ -446,7 +487,8 @@
     margin-bottom: 20px;
     background: var(--board-bg, rgba(0, 0, 0, 0.3));
     padding: 15px;
-    border-radius: 20px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-depth-lg);
     aspect-ratio: 1;
     width: min(100%, 52vh);
     align-self: center;
@@ -539,8 +581,8 @@
 }
 
 @keyframes boardGlow {
-    0%, 100% { box-shadow: 0 0 10px -2px var(--board-glow, rgba(0, 229, 255, 0.4)); }
-    50% { box-shadow: 0 0 26px 3px var(--board-glow, rgba(0, 229, 255, 0.6)); }
+    0%, 100% { box-shadow: 0 0 10px -2px var(--board-glow, rgba(0, 229, 255, 0.4)), var(--shadow-depth-lg); }
+    50% { box-shadow: 0 0 26px 3px var(--board-glow, rgba(0, 229, 255, 0.6)), var(--shadow-depth-lg); }
 }
 
 @keyframes boardDrift {
@@ -575,11 +617,12 @@
     font-size: 1.8em;
     width: 70px;
     height: 70px;
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     border: 2px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    transition: all 0.3s;
+    box-shadow: var(--shadow-depth-sm);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     backdrop-filter: blur(5px);
 }
 
@@ -587,12 +630,16 @@
     border-color: var(--neon-cyan);
     background: rgba(255, 255, 255, 0.15);
     box-shadow: var(--glow-cyan);
-    transform: scale(1.1);
+    transform: scale(1.08);
+}
+
+.power-up-btn:active {
+    transform: scale(0.93);
 }
 
 .found-words {
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     padding: 15px;
     max-height: 150px;
     overflow-y: auto;
@@ -654,7 +701,7 @@
     overflow-x: auto;
     padding: 10px;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
 }
 
 .player-status {
@@ -665,10 +712,11 @@
     padding: 12px 16px;
     background: rgba(0, 229, 255, 0.15);
     border: 2px solid rgba(0, 229, 255, 0.35);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     min-width: 100px;
     text-align: center;
     font-weight: 700;
+    box-shadow: var(--shadow-depth-sm);
 }
 
 .player-status.self {
@@ -717,7 +765,7 @@
     align-items: center;
     padding: 12px 16px;
     background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(57, 255, 106, 0.1));
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     margin-bottom: 8px;
     font-weight: 700;
 }
@@ -744,7 +792,7 @@
     gap: 12px;
     background: linear-gradient(135deg, rgba(255, 214, 10, 0.15), rgba(255, 159, 0, 0.15));
     border: var(--border-thick) solid var(--neon-gold);
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     padding: 20px;
     margin: 20px 0;
     font-size: 1.2em;
@@ -771,15 +819,15 @@
     position: relative;
     overflow: hidden;
     width: 100%;
-    padding: 18px;
+    padding: 20px;
     border: var(--border-thick) solid rgba(255, 255, 255, 0.5);
     border-radius: var(--radius-btn);
     font-family: var(--font-display);
     font-size: 1.2em;
-    font-weight: 700;
+    font-weight: 800;
     cursor: pointer;
     margin-top: 20px;
-    transition: all 0.2s;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
 }
 
 .btn-large::after {
@@ -796,7 +844,8 @@
 }
 
 .btn-large:active {
-    transform: scale(0.97);
+    transform: scale(0.95);
+    filter: brightness(0.95);
 }
 
 .purple-btn {
@@ -821,9 +870,11 @@
 
 .shop-container h2, .profile-container h2 {
     font-family: var(--font-display);
+    font-weight: 800;
     color: var(--text-dark);
     font-size: 2em;
     margin-bottom: 20px;
+    letter-spacing: -0.5px;
 }
 
 .shop-coins {
@@ -847,8 +898,13 @@
     padding: 18px;
     background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(57, 255, 106, 0.1));
     border: 2px solid rgba(0, 229, 255, 0.25);
-    border-radius: 12px;
-    transition: all 0.3s;
+    border-radius: var(--radius-btn);
+    box-shadow: var(--shadow-depth-sm);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.shop-item:active {
+    transform: scale(0.98);
 }
 
 .shop-item:hover {
@@ -872,16 +928,22 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 12px 18px;
     background: var(--grad-blue);
     color: var(--text-dark);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 800;
     font-size: 16px;
     cursor: pointer;
-    transition: all 0.3s;
+    box-shadow: var(--shadow-depth-sm);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.15s ease;
+}
+
+.buy-btn:active {
+    transform: scale(0.93);
+    filter: brightness(0.95);
 }
 
 .owned-count {
@@ -889,7 +951,7 @@
     font-weight: 700;
     color: var(--neon-lime-deep);
     background: rgba(57, 255, 106, 0.15);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 2px 8px;
     vertical-align: middle;
 }
@@ -899,6 +961,7 @@
     position: fixed;
     inset: 0;
     background: rgba(10, 12, 30, 0.75);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -976,10 +1039,10 @@
 
 .avatar-option {
     cursor: pointer;
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     padding: 8px;
     border: 3px solid transparent;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, box-shadow 0.2s ease;
     background: rgba(0, 0, 0, 0.04);
     display: flex;
     flex-direction: column;
@@ -1021,7 +1084,12 @@
     filter: grayscale(0.6);
 }
 
-.avatar-option.avatar-locked:hover {
+.avatar-option:active {
+    transform: scale(0.95);
+}
+
+.avatar-option.avatar-locked:hover,
+.avatar-option.avatar-locked:active {
     transform: none;
 }
 
@@ -1099,7 +1167,7 @@
 
 .profile-stats {
     background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(57, 255, 106, 0.1));
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     padding: 25px;
 }
 
@@ -1134,10 +1202,10 @@
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 20px 40px;
-    border-radius: 12px;
+    border-radius: var(--radius-btn);
     font-family: var(--font-display);
     font-size: 1.2em;
-    font-weight: 700;
+    font-weight: 800;
     border: var(--border-thick) solid rgba(255, 255, 255, 0.5);
     z-index: 1000;
     animation: slideInMessage 0.3s ease-out;
@@ -1211,7 +1279,7 @@
 
     .letter-tile {
         font-size: 1.7em;
-        border-radius: 10px;
+        border-radius: var(--radius-sm);
     }
 
     .game-header {
@@ -1327,13 +1395,18 @@
     background: #fff;
     color: #c62828;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 8px 14px;
     font-weight: 800;
     font-family: inherit;
     font-size: 16px;
     cursor: pointer;
     white-space: nowrap;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.submit-word-btn:active {
+    transform: scale(0.93);
 }
 
 /* ===== Submissions review panel (profile) ===== */
@@ -1341,7 +1414,7 @@
     margin-top: 25px;
     background: linear-gradient(135deg, rgba(255, 214, 10, 0.08), rgba(255, 159, 0, 0.08));
     border: 2px solid rgba(255, 214, 10, 0.35);
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     padding: 20px;
 }
 
@@ -1362,7 +1435,7 @@
     justify-content: space-between;
     align-items: center;
     background: rgba(255, 255, 255, 0.7);
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     padding: 10px 14px;
     margin-bottom: 8px;
     gap: 10px;
@@ -1382,12 +1455,19 @@
 
 .approve-btn, .reject-btn {
     border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-weight: 700;
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    font-weight: 800;
     font-family: inherit;
     cursor: pointer;
     font-size: 16px;
+    box-shadow: var(--shadow-depth-sm);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
+}
+
+.approve-btn:active, .reject-btn:active {
+    transform: scale(0.93);
+    filter: brightness(0.95);
 }
 
 .approve-btn {
@@ -1421,7 +1501,7 @@
     margin-top: 25px;
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(0, 229, 255, 0.08));
     border: 2px solid rgba(139, 92, 246, 0.4);
-    border-radius: 15px;
+    border-radius: var(--radius-btn);
     padding: 20px;
 }
 

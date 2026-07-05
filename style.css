@@ -38,23 +38,37 @@
     --text-dark: #14162b;
     --text-light: #ffffff;
 
-    /* Glow shadows - the "arcade" signature */
-    --glow-cyan: 0 0 8px rgba(0,229,255,.8), 0 0 24px rgba(0,229,255,.5), 0 8px 24px rgba(0,163,255,.35);
-    --glow-green: 0 0 8px rgba(57,255,106,.8), 0 0 24px rgba(57,255,106,.5), 0 8px 24px rgba(18,201,107,.35);
-    --glow-orange: 0 0 8px rgba(255,159,0,.8), 0 0 24px rgba(255,122,26,.5), 0 8px 24px rgba(255,122,26,.35);
-    --glow-gold: 0 0 8px rgba(255,214,10,.8), 0 0 24px rgba(255,183,0,.5), 0 8px 24px rgba(255,183,0,.35);
-    --glow-purple: 0 0 8px rgba(139,92,246,.8), 0 0 24px rgba(109,40,217,.5), 0 8px 24px rgba(109,40,217,.35);
-    --glow-red: 0 0 8px rgba(255,59,92,.8), 0 0 24px rgba(217,4,41,.5), 0 8px 24px rgba(217,4,41,.35);
+    /* Glow shadows - the "arcade" signature, each layered with a neutral dark
+       shadow underneath so elements feel physically lifted, not just neon-flat */
+    --glow-cyan: 0 0 8px rgba(0,229,255,.8), 0 0 24px rgba(0,229,255,.5), 0 8px 24px rgba(0,163,255,.35), var(--shadow-depth-sm);
+    --glow-green: 0 0 8px rgba(57,255,106,.8), 0 0 24px rgba(57,255,106,.5), 0 8px 24px rgba(18,201,107,.35), var(--shadow-depth-sm);
+    --glow-orange: 0 0 8px rgba(255,159,0,.8), 0 0 24px rgba(255,122,26,.5), 0 8px 24px rgba(255,122,26,.35), var(--shadow-depth-sm);
+    --glow-gold: 0 0 8px rgba(255,214,10,.8), 0 0 24px rgba(255,183,0,.5), 0 8px 24px rgba(255,183,0,.35), var(--shadow-depth-sm);
+    --glow-purple: 0 0 8px rgba(139,92,246,.8), 0 0 24px rgba(109,40,217,.5), 0 8px 24px rgba(109,40,217,.35), var(--shadow-depth-sm);
+    --glow-red: 0 0 8px rgba(255,59,92,.8), 0 0 24px rgba(217,4,41,.5), 0 8px 24px rgba(217,4,41,.35), var(--shadow-depth-sm);
 
-    /* Borders and radii */
+    /* Borders and radii - a 3-tier modern scale: compact controls, cards/
+       buttons, and big popups/the board */
     --border-thick: 3px;
-    --radius-card: 28px;
-    --radius-btn: 16px;
-    --radius-tile: 14px;
+    --radius-sm: 14px;
+    --radius-card: 24px;
+    --radius-btn: 18px;
+    --radius-tile: 16px;
+    --radius-frame: 28px;
 
     /* Fonts */
     --font-display: 'Rubik', 'Poppins', sans-serif;
     --font-body: 'Poppins', sans-serif;
+
+    /* App "device" frame - mobile-first, centered on wider screens */
+    --app-max-width: 460px;
+
+    /* Soft neutral depth shadows, layered under the colored glows below for
+       real physical depth instead of flat neon */
+    --shadow-depth-sm: 0 6px 16px rgba(0, 0, 0, 0.3);
+    --shadow-depth-md: 0 10px 26px rgba(0, 0, 0, 0.38);
+    --shadow-depth-lg: 0 20px 50px rgba(0, 0, 0, 0.48);
+    --shadow-frame: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08) inset;
 }
 
 * {
@@ -69,7 +83,14 @@ html, body {
 
 body {
     font-family: var(--font-body);
-    background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-deep-2) 100%);
+    /* The "out of focus" backdrop that shows around the app frame on wide
+       (desktop) viewports - a moody dark gradient plus soft ambient color
+       blobs, distinct from the app surface itself so the frame pops */
+    background:
+        radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.10), transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.10), transparent 45%),
+        linear-gradient(160deg, #05070d 0%, var(--bg-deep) 55%, var(--bg-deep-2) 100%);
+    background-attachment: fixed;
     min-height: 100vh;
     min-height: 100dvh;
     color: #fff;
@@ -95,9 +116,22 @@ button {
     touch-action: manipulation;
 }
 
+/* The "device" frame - a sleek mobile-phone-shaped card, full-bleed on real
+   phones (viewport <= --app-max-width) and a centered floating panel on
+   wider/desktop viewports, so the game always feels like an app, not a
+   stretched desktop page. Deliberately NOT transformed/filtered, so
+   position:fixed descendants (toasts, the confirm overlay) still measure
+   against the true viewport instead of this frame. */
 #app {
+    position: relative;
     min-height: 100vh;
     min-height: 100dvh;
+    max-width: var(--app-max-width);
+    margin: 0 auto;
+    background: linear-gradient(180deg, var(--bg-deep-2) 0%, var(--bg-deep) 100%);
+    box-shadow: var(--shadow-frame);
+    border-radius: var(--radius-frame);
+    overflow: hidden;
 }
 
 .screen {
