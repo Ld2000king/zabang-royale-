@@ -122,8 +122,10 @@ const ARENAS = [
     { name: 'ירושלים',       tagline: 'בירת הנצח',               motif: '👑' }   // 1800+
 ];
 
-// highest arena the trophy count reaches, capped at the last defined arena
+// highest arena the trophy count reaches, capped at the last defined arena.
+// The admin account is treated as top city with every theme unlocked.
 function getArenaIndex(trophies) {
+    if (isAdminAccount()) return ARENAS.length - 1;
     const tier = Math.floor((trophies || 0) / TROPHIES_PER_ARENA);
     return Math.max(0, Math.min(tier, ARENAS.length - 1));
 }
@@ -223,12 +225,22 @@ function saveGameState() {
     localStorage.setItem('zabangState', JSON.stringify(gameState));
 }
 
-function hasInfiniteCoins() {
+// The admin/dev account (identified by name). Grants infinite coins,
+// infinite trophies, and every city/theme unlocked.
+function isAdminAccount() {
     return gameState.playerName.trim().toLowerCase() === 'ld2000';
+}
+
+function hasInfiniteCoins() {
+    return isAdminAccount();
 }
 
 function coinsText() {
     return hasInfiniteCoins() ? '∞' : gameState.coins;
+}
+
+function trophiesText() {
+    return isAdminAccount() ? '∞' : gameState.trophies;
 }
 
 // Trophies track ranked standing in random 1v1 multiplayer specifically
@@ -246,7 +258,7 @@ function awardTrophies(delta, label) {
 function updateHomeUI() {
     document.getElementById('playerName').textContent = gameState.playerName;
     document.getElementById('homeCoins').textContent = coinsText();
-    document.getElementById('homeTrophies').textContent = gameState.trophies;
+    document.getElementById('homeTrophies').textContent = trophiesText();
     document.getElementById('levelBadge').textContent = `רמה ${gameState.level}`;
     document.getElementById('shopCoins').textContent = coinsText();
     document.getElementById('homeAvatar').innerHTML = getAvatarById(gameState.avatarId).svg;
@@ -1095,7 +1107,7 @@ function renderProfile() {
         <p><strong>שם:</strong> ${escapeHtml(gameState.playerName)} <button class="rename-btn" onclick="renamePlayer()" title="ערוך שם">${icon('pencil')}</button></p>
         <p><strong>רמה:</strong> ${gameState.level}</p>
         <p><strong>מטבעות:</strong> ${coinsText()}</p>
-        <p><strong>גביעים:</strong> ${gameState.trophies}</p>
+        <p><strong>גביעים:</strong> ${trophiesText()}</p>
         <p><strong>עיר:</strong> ${currentArena().motif} ${currentArena().name} — ${currentArena().tagline}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
         <p><strong>משחקים:</strong> ${gameState.gamesPlayed}</p>
