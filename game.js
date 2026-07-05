@@ -106,17 +106,20 @@ const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
 // board's visual skin: arena index === board theme index (see .arena-theme-N
 // in game.css). Reaching an arena unlocks its theme for "preferred board".
 const TROPHIES_PER_ARENA = 200;
+// Each city carries a short characterization + motif reflecting its real
+// identity - moshava/periphery/coast/tech/capital - so climbing the ladder
+// feels like a little tour of Israel, from a farming colony to the capital.
 const ARENAS = [
-    { name: 'מזכרת בתיה' },   // 0-199
-    { name: 'יבנה' },          // 200-399
-    { name: 'רחובות' },        // 400-599
-    { name: 'אשקלון' },        // 600-799
-    { name: 'נתניה' },         // 800-999
-    { name: 'באר שבע' },       // 1000-1199
-    { name: 'חיפה' },          // 1200-1399
-    { name: 'ראשון לציון' },   // 1400-1599
-    { name: 'תל אביב' },       // 1600-1799
-    { name: 'ירושלים' }        // 1800+
+    { name: 'מזכרת בתיה',   tagline: 'מושבה חקלאית ותיקה',      motif: '🌾' },  // 0-199
+    { name: 'יבנה',          tagline: 'עיר של מורשת עתיקה',      motif: '📜' },  // 200-399
+    { name: 'רחובות',        tagline: 'עיר המדע',                motif: '🔬' },  // 400-599
+    { name: 'אשקלון',        tagline: 'עיר חוף דרומית',          motif: '🏖️' },  // 600-799
+    { name: 'נתניה',         tagline: 'עיר נופש לחוף הים',       motif: '🌊' },  // 800-999
+    { name: 'באר שבע',       tagline: 'בירת הנגב',               motif: '🏜️' },  // 1000-1199
+    { name: 'חיפה',          tagline: 'עיר נמל וטכנולוגיה',      motif: '⚓' },  // 1200-1399
+    { name: 'ראשון לציון',   tagline: 'עיר יין ומייסדים',        motif: '🍷' },  // 1400-1599
+    { name: 'תל אביב',       tagline: 'העיר החדשנית שלא נחה',    motif: '🏙️' },  // 1600-1799
+    { name: 'ירושלים',       tagline: 'בירת הנצח',               motif: '👑' }   // 1800+
 ];
 
 // highest arena the trophy count reaches, capped at the last defined arena
@@ -247,8 +250,13 @@ function updateHomeUI() {
     document.getElementById('levelBadge').textContent = `רמה ${gameState.level}`;
     document.getElementById('shopCoins').textContent = coinsText();
     document.getElementById('homeAvatar').innerHTML = getAvatarById(gameState.avatarId).svg;
+    const arena = currentArena();
     const arenaEl = document.getElementById('homeArena');
-    if (arenaEl) arenaEl.textContent = currentArena().name;
+    if (arenaEl) arenaEl.textContent = arena.name;
+    const taglineEl = document.getElementById('homeCityTagline');
+    if (taglineEl) taglineEl.textContent = arena.tagline;
+    const motifEl = document.getElementById('homeCityMotif');
+    if (motifEl) motifEl.textContent = arena.motif;
     renderThemeSelector();
 }
 
@@ -261,7 +269,7 @@ function renderThemeSelector() {
     const pref = preferredThemeIndex();
     sel.innerHTML = ARENAS.map((a, i) => {
         const locked = !isThemeUnlocked(i);
-        return `<option value="${i}"${i === pref ? ' selected' : ''}${locked ? ' disabled' : ''}>${a.name}${locked ? ' 🔒' : ''}</option>`;
+        return `<option value="${i}"${i === pref ? ' selected' : ''}${locked ? ' disabled' : ''}>${a.motif} ${a.name}${locked ? ' 🔒' : ''}</option>`;
     }).join('');
 }
 
@@ -1088,7 +1096,7 @@ function renderProfile() {
         <p><strong>רמה:</strong> ${gameState.level}</p>
         <p><strong>מטבעות:</strong> ${coinsText()}</p>
         <p><strong>גביעים:</strong> ${gameState.trophies}</p>
-        <p><strong>זירה:</strong> ${currentArena().name}</p>
+        <p><strong>עיר:</strong> ${currentArena().motif} ${currentArena().name} — ${currentArena().tagline}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
         <p><strong>משחקים:</strong> ${gameState.gamesPlayed}</p>
     `;

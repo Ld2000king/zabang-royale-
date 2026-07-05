@@ -122,10 +122,10 @@
     box-shadow: var(--glow-cyan);
 }
 
-.arena-banner .icon svg {
-    width: 1.6em;
-    height: 1.6em;
-    color: var(--neon-cyan);
+.arena-banner-motif {
+    font-size: 2em;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.4));
 }
 
 .arena-banner-text {
@@ -145,6 +145,12 @@
     font-size: 1.3em;
     font-weight: 700;
     color: var(--neon-cyan);
+}
+
+.arena-banner-tagline {
+    font-size: 0.8em;
+    color: #cbd5e1;
+    font-weight: 600;
 }
 
 .theme-selector {
