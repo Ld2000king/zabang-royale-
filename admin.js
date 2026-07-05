@@ -38,9 +38,21 @@ function adminSignIn() {
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
             showMessage('התחברת כאדמין!', 'success');
-            renderAdminSection();
+            refreshAfterAdminChange();
         })
         .catch(err => showMessage('התחברות נכשלה: ' + err.message, 'error'));
+}
+
+// Admin status affects coins/trophies/unlocked cities (see isAdminAccount in
+// game.js), so refresh the home banner + profile whenever it changes.
+function refreshAfterAdminChange() {
+    if (typeof updateHomeUI === 'function') updateHomeUI();
+    const profileEl = document.getElementById('profileScreen');
+    if (profileEl && profileEl.classList.contains('active') && typeof renderProfile === 'function') {
+        renderProfile();
+    } else {
+        renderAdminSection();
+    }
 }
 
 function adminSignOut() {
@@ -50,7 +62,7 @@ function adminSignOut() {
         // fall back to an anonymous session so regular features keep working
         auth.signInAnonymously().catch(() => {});
         showMessage('התנתקת מאדמין', 'info');
-        renderAdminSection();
+        refreshAfterAdminChange();
     });
 }
 
@@ -158,4 +170,13 @@ function loadApprovedWordsFromFirebase() {
 
 if (typeof authReady !== 'undefined') {
     authReady.then(loadApprovedWordsFromFirebase);
+}
+
+// A persisted admin session is restored asynchronously after page load, so
+// refresh the home/profile UI when auth resolves - otherwise cities stay
+// locked until the next manual navigation.
+if (typeof auth !== 'undefined' && auth) {
+    auth.onAuthStateChanged(() => {
+        if (typeof refreshAfterAdminChange === 'function') refreshAfterAdminChange();
+    });
 }

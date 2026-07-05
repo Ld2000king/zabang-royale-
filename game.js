@@ -225,10 +225,16 @@ function saveGameState() {
     localStorage.setItem('zabangState', JSON.stringify(gameState));
 }
 
-// The admin/dev account (identified by name). Grants infinite coins,
-// infinite trophies, and every city/theme unlocked.
+// The admin/dev account. Grants infinite coins, infinite trophies, and
+// every city/theme unlocked. Recognized two ways:
+//  1. the local dev shortcut: player named 'ld2000'
+//  2. a real Firebase admin sign-in (a non-anonymous account via
+//     adminSignIn) - this is what actually matters when logging in as
+//     admin on another device, where the display name isn't 'ld2000'
 function isAdminAccount() {
-    return gameState.playerName.trim().toLowerCase() === 'ld2000';
+    if (gameState.playerName.trim().toLowerCase() === 'ld2000') return true;
+    if (typeof auth !== 'undefined' && auth && auth.currentUser && !auth.currentUser.isAnonymous) return true;
+    return false;
 }
 
 function hasInfiniteCoins() {
