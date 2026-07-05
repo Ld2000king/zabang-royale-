@@ -199,7 +199,8 @@ let battleState = {
     players: [],
     playerScore: 0,
     botsFrozenSeconds: 0,
-    totalCoinsEarned: 0
+    totalCoinsEarned: 0,
+    botTimer: null   // handle for the bots' scoring interval (see startBotAI/stopBotAI)
 };
 
 // Initialize
@@ -318,6 +319,8 @@ function showScreen(screenId) {
 
 function goHome() {
     if (currentGame.timer) clearInterval(currentGame.timer);
+    currentGame.gameActive = false; // stop any game loops still checking this flag
+    stopBotAI();                     // kill the bots interval so it can't leak into a later game
     // Multiplayer: detach Firebase listeners / leave the room before going home
     if (currentGame.mode === 'multiplayer' && typeof leaveMultiplayerRoom === 'function') {
         leaveMultiplayerRoom();
@@ -957,9 +960,10 @@ function updateBattleUI() {
 }
 
 function startBotAI() {
-    const interval = setInterval(() => {
+    stopBotAI(); // never stack intervals across rounds
+    battleState.botTimer = setInterval(() => {
         if (!currentGame.gameActive) {
-            clearInterval(interval);
+            stopBotAI();
             return;
         }
 
@@ -976,6 +980,17 @@ function startBotAI() {
 
         updateBattleUI();
     }, 2000);
+}
+
+// Stops the bots' scoring interval. Must be called whenever we leave a bots
+// battle (goHome) or start a real-multiplayer game - otherwise a lingering
+// bot interval keeps calling updateBattleUI() and paints bot names over the
+// live multiplayer player list.
+function stopBotAI() {
+    if (battleState.botTimer) {
+        clearInterval(battleState.botTimer);
+        battleState.botTimer = null;
+    }
 }
 
 function endBattleRound() {

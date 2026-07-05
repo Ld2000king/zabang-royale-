@@ -204,6 +204,11 @@ function onRoomUpdate(room) {
     }
 
     if (room.status === 'playing') {
+        // never let a leftover bots battle bleed into a real multiplayer game:
+        // kill any bot interval and drop stale bots so they can't be rendered
+        // into the shared player-status strip alongside the real players
+        if (typeof stopBotAI === 'function') stopBotAI();
+        if (typeof battleState !== 'undefined') battleState.players = [];
         // (re)render the board once per new round
         if (room.currentRound !== MP.lastRound) {
             MP.lastRound = room.currentRound;
