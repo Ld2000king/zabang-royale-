@@ -44,6 +44,14 @@
                     </div>
                 </div>
 
+                <div class="arena-banner">
+                    <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21 V9 L12 4 L20 9 V21"/><path d="M9 21 V14 H15 V21"/><path d="M4 21 H20"/></svg></span>
+                    <div class="arena-banner-text">
+                        <span class="arena-banner-label">זירה</span>
+                        <span class="arena-banner-name" id="homeArena">מזכרת בתיה</span>
+                    </div>
+                </div>
+
                 <div class="button-group">
                     <button class="mega-btn blue-btn" onclick="showGameModeSelection()">
                         <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 4 L20 12 L6 20 Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span> משחק
@@ -54,6 +62,11 @@
                     <button class="mega-btn green-btn" onclick="goToProfile()">
                         <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7 Z"/></svg></span> פרופיל
                     </button>
+                </div>
+
+                <div class="theme-selector">
+                    <label for="themeSelect">לוח מועדף:</label>
+                    <select id="themeSelect" onchange="onThemeSelect(this.value)"></select>
                 </div>
             </div>
         </div>

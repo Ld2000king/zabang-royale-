@@ -101,6 +101,55 @@ const SHOP_ITEMS = [
 
 const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
 
+// Arena progression - one tier per 200 trophies, named after Israeli cities
+// ascending from a small town to the capital. Each arena also defines the
+// board's visual skin: arena index === board theme index (see .arena-theme-N
+// in game.css). Reaching an arena unlocks its theme for "preferred board".
+const TROPHIES_PER_ARENA = 200;
+const ARENAS = [
+    { name: 'מזכרת בתיה' },   // 0-199
+    { name: 'יבנה' },          // 200-399
+    { name: 'רחובות' },        // 400-599
+    { name: 'אשקלון' },        // 600-799
+    { name: 'נתניה' },         // 800-999
+    { name: 'באר שבע' },       // 1000-1199
+    { name: 'חיפה' },          // 1200-1399
+    { name: 'ראשון לציון' },   // 1400-1599
+    { name: 'תל אביב' },       // 1600-1799
+    { name: 'ירושלים' }        // 1800+
+];
+
+// highest arena the trophy count reaches, capped at the last defined arena
+function getArenaIndex(trophies) {
+    const tier = Math.floor((trophies || 0) / TROPHIES_PER_ARENA);
+    return Math.max(0, Math.min(tier, ARENAS.length - 1));
+}
+
+function currentArena() {
+    return ARENAS[getArenaIndex(gameState.trophies)];
+}
+
+// themes unlocked = every arena up to and including the current one
+function isThemeUnlocked(themeIndex) {
+    return themeIndex <= getArenaIndex(gameState.trophies);
+}
+
+// the player's preferred theme, clamped to what they've actually unlocked
+// (trophies can drop on a loss and re-lock a previously chosen theme)
+function preferredThemeIndex() {
+    return Math.min(gameState.preferredTheme || 0, getArenaIndex(gameState.trophies));
+}
+
+// Applies an arena skin to a board container. Themes are CSS classes
+// arena-theme-N on the .board element; renderBoard only clears innerHTML,
+// so the class survives re-renders within a round.
+function applyBoardTheme(boardId, themeIndex) {
+    const el = document.getElementById(boardId);
+    if (!el) return;
+    [...el.classList].forEach(c => { if (c.startsWith('arena-theme-')) el.classList.remove(c); });
+    el.classList.add('arena-theme-' + (themeIndex || 0));
+}
+
 // Game State
 let gameState = {
     playerName: 'שחקן',
@@ -112,7 +161,8 @@ let gameState = {
     xp: 0,
     xpToNextLevel: 100,
     avatarId: 'dan',
-    trophies: 0
+    trophies: 0,
+    preferredTheme: 0
 };
 
 let currentGame = {
@@ -153,6 +203,7 @@ function loadGameState() {
     if (saved) gameState = JSON.parse(saved);
     if (!gameState.avatarId) gameState.avatarId = 'dan';
     if (typeof gameState.trophies !== 'number') gameState.trophies = 0;
+    if (typeof gameState.preferredTheme !== 'number') gameState.preferredTheme = 0;
     if (!gameState.inventory) gameState.inventory = {};
     // migrate the old single-counter hint field (pre-multi-item inventory) into the new shape
     if (typeof gameState.hints === 'number') {
@@ -196,6 +247,29 @@ function updateHomeUI() {
     document.getElementById('levelBadge').textContent = `רמה ${gameState.level}`;
     document.getElementById('shopCoins').textContent = coinsText();
     document.getElementById('homeAvatar').innerHTML = getAvatarById(gameState.avatarId).svg;
+    const arenaEl = document.getElementById('homeArena');
+    if (arenaEl) arenaEl.textContent = currentArena().name;
+    renderThemeSelector();
+}
+
+// Populate the "preferred board" dropdown. Every arena/theme is listed, but
+// themes above the player's current arena are disabled (locked) until the
+// trophy count reaches them.
+function renderThemeSelector() {
+    const sel = document.getElementById('themeSelect');
+    if (!sel) return;
+    const pref = preferredThemeIndex();
+    sel.innerHTML = ARENAS.map((a, i) => {
+        const locked = !isThemeUnlocked(i);
+        return `<option value="${i}"${i === pref ? ' selected' : ''}${locked ? ' disabled' : ''}>${a.name}${locked ? ' 🔒' : ''}</option>`;
+    }).join('');
+}
+
+function onThemeSelect(value) {
+    const idx = parseInt(value, 10);
+    if (isNaN(idx) || !isThemeUnlocked(idx)) { renderThemeSelector(); return; }
+    gameState.preferredTheme = idx;
+    saveGameState();
 }
 
 // Navigation
@@ -559,6 +633,7 @@ function startSinglePlayer() {
 
     showScreen('gameScreen');
     renderBoard('board');
+    applyBoardTheme('board', preferredThemeIndex());
     updateFoundWords();
     startTimer('single');
 }
@@ -821,6 +896,7 @@ function startBattleRound() {
     const shuffleBtn = document.getElementById('battleShuffleBtn');
     if (shuffleBtn) shuffleBtn.style.display = '';
     renderBoard('battleBoard');
+    applyBoardTheme('battleBoard', preferredThemeIndex());
     updateBattleUI();
     startBotAI();
     startTimer('battle');
@@ -1012,6 +1088,7 @@ function renderProfile() {
         <p><strong>רמה:</strong> ${gameState.level}</p>
         <p><strong>מטבעות:</strong> ${coinsText()}</p>
         <p><strong>גביעים:</strong> ${gameState.trophies}</p>
+        <p><strong>זירה:</strong> ${currentArena().name}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
         <p><strong>משחקים:</strong> ${gameState.gamesPlayed}</p>
     `;

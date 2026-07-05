@@ -102,10 +102,18 @@ async function createRoom(opts = {}) {
     }
     MP.roomCode = code;
 
+    // Board skin for the whole match. Random 1v1: the arena of the creator's
+    // current trophy tier. Friends: the host's chosen preferred theme. Both
+    // players then render the same skin from this shared room field.
+    const boardTheme = MP.matchType === 'random'
+        ? getArenaIndex(gameState.trophies)
+        : preferredThemeIndex();
+
     await db.ref('rooms/' + code).set({
         status: 'waiting',
         hostId: MP.playerId,
         matchType: MP.matchType,
+        boardTheme: boardTheme,
         currentRound: 0,
         totalRounds: TOTAL_ROUNDS,
         roundDurationSec: ROUND_SECONDS,
@@ -206,6 +214,7 @@ function onRoomUpdate(room) {
             document.getElementById('roundBadge').textContent = `סיבוב ${room.currentRound}/${room.totalRounds}`;
             document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
             renderBoard('battleBoard');
+            applyBoardTheme('battleBoard', room.boardTheme || 0);
             // "shuffle opponents' score" makes no sense against real people - hide it
             const shuffleBtn = document.getElementById('battleShuffleBtn');
             if (shuffleBtn) shuffleBtn.style.display = 'none';
