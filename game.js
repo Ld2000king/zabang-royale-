@@ -232,9 +232,23 @@ let battleState = {
 window.addEventListener('load', () => {
     loadGameState();
     normalizeDictionary();
+    mergeExtraWords();
     loadCustomWords();
     updateHomeUI();
 });
+
+// Merge the words.js expansion pack (EXTRA_WORDS) into the dictionary. Words
+// are normalized (final letters -> regular) so they're findable on the board,
+// and duplicates against the base dictionary are skipped.
+function mergeExtraWords() {
+    if (typeof EXTRA_WORDS === 'undefined') return;
+    EXTRA_WORDS.forEach(w => {
+        const word = normalizeFinals(w);
+        if (word.length >= 2 && HEBREW_DICTIONARY[word] === undefined) {
+            HEBREW_DICTIONARY[word] = pointsForWord(word);
+        }
+    });
+}
 
 // Storage
 function loadGameState() {
