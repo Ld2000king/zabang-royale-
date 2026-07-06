@@ -103,23 +103,34 @@ const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
 
 // Arena progression - one tier per 200 trophies, named after Israeli cities
 // ascending from a small town to the capital. Each arena also defines the
-// board's visual skin: arena index === board theme index (see .arena-theme-N
-// in game.css). Reaching an arena unlocks its theme for "preferred board".
+// board's visual skin (see applyBoardTheme, which writes the city's colors
+// into inline CSS vars). Reaching an arena unlocks its theme for "preferred
+// board".
 const TROPHIES_PER_ARENA = 200;
-// Each city carries a short characterization + motif reflecting its real
-// identity - moshava/periphery/coast/tech/capital - so climbing the ladder
-// feels like a little tour of Israel, from a farming colony to the capital.
+// A tour of Israel from a quiet farming colony up to the glittering diamond
+// exchange - 16 cities, one per 200-trophy tier (arena 15 = 3000+). Each city
+// carries its character (tagline + motif) plus its own board skin: two gradient
+// stops (c1->c2), an ambient glow color, and a pulse rhythm - calm 7s villages
+// through the 3.5s nonstop Tel Aviv. textLight flips tile text to white where
+// the gradient is too dark for the default dark text. applyBoardTheme() reads
+// these straight into inline CSS vars, so adding cities needs no CSS changes.
 const ARENAS = [
-    { name: 'מזכרת בתיה',   tagline: 'מושבה חקלאית ותיקה',      motif: '🌾' },  // 0-199
-    { name: 'יבנה',          tagline: 'עיר של מורשת עתיקה',      motif: '📜' },  // 200-399
-    { name: 'רחובות',        tagline: 'עיר המדע',                motif: '🔬' },  // 400-599
-    { name: 'אשקלון',        tagline: 'עיר חוף דרומית',          motif: '🏖️' },  // 600-799
-    { name: 'נתניה',         tagline: 'עיר נופש לחוף הים',       motif: '🌊' },  // 800-999
-    { name: 'באר שבע',       tagline: 'בירת הנגב',               motif: '🏜️' },  // 1000-1199
-    { name: 'חיפה',          tagline: 'עיר נמל וטכנולוגיה',      motif: '⚓' },  // 1200-1399
-    { name: 'ראשון לציון',   tagline: 'עיר יין ומייסדים',        motif: '🍷' },  // 1400-1599
-    { name: 'תל אביב',       tagline: 'העיר החדשנית שלא נחה',    motif: '🏙️' },  // 1600-1799
-    { name: 'ירושלים',       tagline: 'בירת הנצח',               motif: '👑' }   // 1800+
+    { name: 'מזכרת בתיה',  tagline: 'מושבה חקלאית ותיקה',  motif: '🌾', c1: '#7ed957', c2: '#3a9d3a', glow: 'rgba(126, 217, 87, 0.5)',  pulse: '7s' },    // 0-199
+    { name: 'אשדוד',        tagline: 'עיר נמל דרומית',       motif: '⚓', c1: '#29b6f6', c2: '#0277bd', glow: 'rgba(41, 182, 246, 0.5)',  pulse: '6.5s', textLight: true }, // 200-399
+    { name: 'באר שבע',      tagline: 'בירת הנגב',            motif: '🏜️', c1: '#e8c07d', c2: '#c8862e', glow: 'rgba(232, 192, 125, 0.5)', pulse: '7s' },    // 400-599
+    { name: 'חיפה',         tagline: 'עיר הכרמל',            motif: '🌲', c1: '#2ee6a0', c2: '#12907a', glow: 'rgba(46, 230, 160, 0.5)',  pulse: '6s' },    // 600-799
+    { name: 'ראשון לציון',  tagline: 'עיר יין ומייסדים',     motif: '🍷', c1: '#e0567a', c2: '#8e1f45', glow: 'rgba(224, 86, 122, 0.55)', pulse: '6s', textLight: true }, // 800-999
+    { name: 'תל אביב',      tagline: 'העיר שלא נחה',         motif: '🏙️', c1: '#ff6ec7', c2: '#b3199e', glow: 'rgba(255, 110, 199, 0.55)', pulse: '3.5s', textLight: true }, // 1000-1199
+    { name: 'ירושלים',      tagline: 'בירת הנצח',            motif: '👑', c1: '#ffd76a', c2: '#d99a2b', glow: 'rgba(255, 214, 10, 0.6)',   pulse: '6.5s' }, // 1200-1399
+    { name: 'אילת',         tagline: 'עיר הנופש האדומה',     motif: '🐠', c1: '#ff8a5c', c2: '#e0492e', glow: 'rgba(255, 138, 92, 0.5)',   pulse: '5s' },   // 1400-1599
+    { name: 'נצרת',         tagline: 'פנינת הגליל',          motif: '⛪', c1: '#4db6ac', c2: '#00695c', glow: 'rgba(77, 182, 172, 0.5)',   pulse: '6.5s', textLight: true }, // 1600-1799
+    { name: 'טבריה',        tagline: 'עיר הכנרת',            motif: '🌊', c1: '#4dd0e1', c2: '#00838f', glow: 'rgba(77, 208, 225, 0.5)',   pulse: '5.5s' }, // 1800-1999
+    { name: 'אשקלון',       tagline: 'עיר חוף עתיקה',        motif: '🏖️', c1: '#7fd4e8', c2: '#2a8fb0', glow: 'rgba(127, 212, 232, 0.5)',  pulse: '6s' },   // 2000-2199
+    { name: 'נתניה',        tagline: 'עיר היהלומים',         motif: '💎', c1: '#90caf9', c2: '#5c6bc0', glow: 'rgba(144, 202, 249, 0.55)', pulse: '5s', textLight: true }, // 2200-2399
+    { name: 'הרצליה',       tagline: 'עיר הייטק והים',       motif: '🏄', c1: '#4dd0ff', c2: '#7b3ff2', glow: 'rgba(77, 208, 255, 0.55)',  pulse: '4.5s', textLight: true }, // 2400-2599
+    { name: 'פתח תקווה',    tagline: 'אם המושבות',           motif: '🏭', c1: '#ffb74d', c2: '#c17b1e', glow: 'rgba(255, 183, 77, 0.5)',   pulse: '6s' },   // 2600-2799
+    { name: 'רעננה',        tagline: 'עיר ירוקה ומטופחת',    motif: '🌳', c1: '#9ccc65', c2: '#4a8c2a', glow: 'rgba(156, 204, 101, 0.5)',  pulse: '5.5s' }, // 2800-2999
+    { name: 'רמת גן',       tagline: 'עיר הבורסה והיהלומים', motif: '💠', c1: '#b388ff', c2: '#7b1fa2', glow: 'rgba(179, 136, 255, 0.6)',  pulse: '4s', textLight: true }  // 3000+
 ];
 
 // highest arena the trophy count reaches, capped at the last defined arena.
@@ -145,14 +156,21 @@ function preferredThemeIndex() {
     return Math.min(gameState.preferredTheme || 0, getArenaIndex(gameState.trophies));
 }
 
-// Applies an arena skin to a board container. Themes are CSS classes
-// arena-theme-N on the .board element; renderBoard only clears innerHTML,
-// so the class survives re-renders within a round.
+// Applies an arena skin to a board container by writing the city's colors
+// straight into inline CSS vars (the .arena-themed class turns on the ambient
+// animation that reads them). renderBoard only clears innerHTML, so these
+// survive re-renders within a round.
 function applyBoardTheme(boardId, themeIndex) {
     const el = document.getElementById(boardId);
     if (!el) return;
-    [...el.classList].forEach(c => { if (c.startsWith('arena-theme-')) el.classList.remove(c); });
-    el.classList.add('arena-theme-' + (themeIndex || 0));
+    const arena = ARENAS[themeIndex] || ARENAS[0];
+    el.classList.add('arena-themed');
+    el.style.setProperty('--tile-bg', `linear-gradient(135deg, ${arena.c1}, ${arena.c2})`);
+    el.style.setProperty('--tile-shadow', `0 0 12px ${arena.glow}`);
+    el.style.setProperty('--board-glow', arena.glow);
+    el.style.setProperty('--board-pulse', arena.pulse);
+    el.style.setProperty('--tile-text', arena.textLight ? '#fff' : 'var(--text-dark)');
+    el.style.setProperty('--board-bg', 'rgba(8, 12, 24, 0.5)');
 }
 
 // Game State
@@ -173,6 +191,17 @@ let gameState = {
 
 // price of a premium ("cooler") profile picture in the shop
 const AVATAR_COST = 3000;
+
+// Coins granted by watching a (mock) rewarded video ad.
+const AD_REWARD_COINS = 50;
+
+// Mock in-app coin packages. Prices are display-only placeholders in ILS -
+// tapping "buy" just shows the store-coming-soon modal (no real payments).
+const COIN_PACKAGES = [
+    { name: 'שק מטבעות', coins: 500,  price: '₪4.90',  emoji: '💰' },
+    { name: 'תיבת אוצר', coins: 1200, price: '₪9.90',  emoji: '🎁' },
+    { name: 'אוצר ענק',  coins: 3000, price: '₪19.90', emoji: '💎' }
+];
 
 // words the admin has rejected (public rejected_words node), used to prune a
 // player's local submission list. Populated by a Firebase listener in admin.js.
@@ -1085,10 +1114,42 @@ function handleNextRoundClick() {
 // are still paid with coins at the moment of use, during the game
 function renderShop() {
     const shopEl = document.getElementById('shopItems');
-    shopEl.innerHTML = `<p class="shop-note">כל העזרים אפשר לקנות מראש למלאי - פשוט לחצו על "קנה"</p>`;
+    let html = '';
 
+    // --- Get coins: rewarded ad + (mock) coin packages ---
+    html += `<h3 class="shop-section-title">קבל מטבעות</h3>`;
+    html += `
+        <div class="shop-item ad-card">
+            <div class="item-info item-info-avatar">
+                <div class="pack-emoji">🎬</div>
+                <div>
+                    <h3>צפה בסרטון</h3>
+                    <p>קבל ${AD_REWARD_COINS} מטבעות חינם</p>
+                </div>
+            </div>
+            <button class="buy-btn green-buy-btn" onclick="watchAdForCoins()">${icon('coin', 'coin-icon')} +${AD_REWARD_COINS}</button>
+        </div>
+    `;
+    COIN_PACKAGES.forEach(p => {
+        html += `
+            <div class="shop-item pack-card">
+                <div class="item-info item-info-avatar">
+                    <div class="pack-emoji">${p.emoji}</div>
+                    <div>
+                        <h3>${p.name}</h3>
+                        <p>${icon('coin', 'coin-icon')} ${p.coins} מטבעות</p>
+                    </div>
+                </div>
+                <button class="buy-btn price-btn" onclick="showIapComingSoon()">${p.price}</button>
+            </div>
+        `;
+    });
+
+    // --- Power-ups (bought with coins into inventory) ---
+    html += `<h3 class="shop-section-title">עזרים למשחק</h3>`;
+    html += `<p class="shop-note">כל העזרים אפשר לקנות מראש למלאי - פשוט לחצו על "קנה"</p>`;
     SHOP_ITEMS.forEach(item => {
-        shopEl.innerHTML += `
+        html += `
             <div class="shop-item">
                 <div class="item-info">
                     <h3>${icon(item.icon)} ${item.name} <span class="owned-count">במלאי: ${gameState.inventory[item.key]}</span></h3>
@@ -1099,13 +1160,13 @@ function renderShop() {
         `;
     });
 
-    // Premium ("cooler") profile pictures
+    // --- Premium ("cooler") profile pictures ---
     const premiumAvatars = AVATARS.filter(a => a.premium);
     if (premiumAvatars.length) {
-        shopEl.innerHTML += `<h3 class="shop-section-title">תמונות פרופיל מגניבות</h3>`;
+        html += `<h3 class="shop-section-title">תמונות פרופיל מגניבות</h3>`;
         premiumAvatars.forEach(a => {
             const owned = isAvatarOwned(a.id);
-            shopEl.innerHTML += `
+            html += `
                 <div class="shop-item">
                     <div class="item-info item-info-avatar">
                         <div class="shop-avatar">${a.svg}</div>
@@ -1121,6 +1182,51 @@ function renderShop() {
             `;
         });
     }
+
+    shopEl.innerHTML = html;
+}
+
+// Mock rewarded video: a 5s countdown "loading" the ad, then grant coins.
+function watchAdForCoins() {
+    const overlay = document.getElementById('adOverlay');
+    const countEl = document.getElementById('adCountdown');
+    if (!overlay || !countEl) return;
+    if (overlay.dataset.running === '1') return; // ignore taps while already playing
+    overlay.dataset.running = '1';
+    overlay.style.display = 'flex';
+
+    let remaining = 5;
+    countEl.textContent = remaining;
+    const timer = setInterval(() => {
+        remaining--;
+        if (remaining > 0) { countEl.textContent = remaining; return; }
+        clearInterval(timer);
+        overlay.style.display = 'none';
+        overlay.dataset.running = '0';
+        gameState.coins += AD_REWARD_COINS;
+        saveGameState();
+        updateHomeUI();
+        renderShop();
+        showMessage(`קיבלת ${AD_REWARD_COINS} מטבעות!`, 'success');
+    }, 1000);
+}
+
+// Mock IAP: real payments arrive with the native app launch.
+function showIapComingSoon() {
+    showInfoModal('החנות הפיננסית תהיה זמינה עם השקת האפליקציה הרשמית ב-Google Play וב-App Store!');
+}
+
+// Generic single-button info modal.
+function showInfoModal(message) {
+    const overlay = document.getElementById('infoOverlay');
+    if (!overlay) return;
+    document.getElementById('infoText').textContent = message;
+    overlay.style.display = 'flex';
+}
+
+function closeInfoModal() {
+    const overlay = document.getElementById('infoOverlay');
+    if (overlay) overlay.style.display = 'none';
 }
 
 // generic yes/no confirmation modal (the callback runs only on "yes")

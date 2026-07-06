@@ -538,31 +538,21 @@
     transform: scale(1.08);
 }
 
-/* ===== Arena board themes (skins). arena-theme-N is applied to the .board
-   container; the letter tiles inherit these vars. Index === arena index. ===== */
-/* Each theme also sets --board-glow (ambient color) and --board-pulse (its
-   own animation rhythm - calm village to nonstop Tel Aviv) so every city
-   feels alive, not just recolored. See the animation rules below. */
-.arena-theme-0 { --board-bg: rgba(0, 40, 60, 0.35); --tile-bg: linear-gradient(135deg, #00e5ff, #00a3ff); --tile-shadow: 0 0 12px rgba(0, 229, 255, 0.55); --tile-border: rgba(255, 255, 255, 0.6); --board-glow: rgba(0, 229, 255, 0.45); --board-pulse: 7s; }
-.arena-theme-1 { --board-bg: rgba(10, 50, 20, 0.4); --tile-bg: linear-gradient(135deg, #39ff6a, #1fa84a); --tile-shadow: 0 0 12px rgba(57, 255, 106, 0.55); --tile-border: rgba(255, 255, 255, 0.55); --board-glow: rgba(57, 255, 106, 0.45); --board-pulse: 6.5s; }
-.arena-theme-2 { --board-bg: rgba(40, 20, 60, 0.45); --tile-bg: linear-gradient(135deg, #b57cff, #7b3ff2); --tile-shadow: 0 0 12px rgba(139, 92, 246, 0.6); --tile-border: rgba(255, 255, 255, 0.55); --tile-text: #fff; --board-glow: rgba(139, 92, 246, 0.5); --board-pulse: 5.5s; }
-.arena-theme-3 { --board-bg: rgba(60, 35, 5, 0.45); --tile-bg: linear-gradient(135deg, #ffb03a, #ff7a00); --tile-shadow: 0 0 12px rgba(255, 145, 0, 0.6); --tile-border: rgba(255, 255, 255, 0.6); --board-glow: rgba(255, 145, 0, 0.5); --board-pulse: 6s; }
-.arena-theme-4 { --board-bg: rgba(60, 10, 40, 0.45); --tile-bg: linear-gradient(135deg, #ff5ecb, #ff2e97); --tile-shadow: 0 0 12px rgba(255, 46, 151, 0.6); --tile-border: rgba(255, 255, 255, 0.6); --tile-text: #fff; --board-glow: rgba(255, 46, 151, 0.5); --board-pulse: 5.5s; }
-.arena-theme-5 { --board-bg: rgba(55, 42, 20, 0.5); --tile-bg: linear-gradient(135deg, #e8c583, #c99a4e); --tile-shadow: 0 0 12px rgba(201, 154, 78, 0.55); --tile-border: rgba(255, 255, 255, 0.5); --board-glow: rgba(201, 154, 78, 0.45); --board-pulse: 7.5s; }
-.arena-theme-6 { --board-bg: rgba(5, 45, 50, 0.45); --tile-bg: linear-gradient(135deg, #2ee6c4, #12a3a3); --tile-shadow: 0 0 12px rgba(46, 230, 196, 0.55); --tile-border: rgba(255, 255, 255, 0.55); --board-glow: rgba(46, 230, 196, 0.45); --board-pulse: 5s; }
-.arena-theme-7 { --board-bg: rgba(60, 10, 15, 0.45); --tile-bg: linear-gradient(135deg, #ff5b5b, #e01e37); --tile-shadow: 0 0 12px rgba(224, 30, 55, 0.6); --tile-border: rgba(255, 255, 255, 0.6); --tile-text: #fff; --board-glow: rgba(224, 30, 55, 0.5); --board-pulse: 6s; }
-.arena-theme-8 { --board-bg: rgba(50, 20, 35, 0.5); --tile-bg: linear-gradient(135deg, #ff9a3d, #ff2ec4); --tile-shadow: 0 0 14px rgba(255, 92, 180, 0.6); --tile-border: rgba(255, 255, 255, 0.6); --tile-text: #fff; --board-glow: rgba(255, 92, 180, 0.55); --board-pulse: 3.5s; }
-.arena-theme-9 { --board-bg: rgba(20, 22, 55, 0.55); --tile-bg: linear-gradient(135deg, #ffd60a, #ffb700); --tile-shadow: 0 0 16px rgba(255, 214, 10, 0.7); --tile-border: #fff; --tile-selected-bg: linear-gradient(135deg, #fff, #ffe082); --board-glow: rgba(255, 214, 10, 0.6); --board-pulse: 6.5s; }
+/* ===== Arena board themes (skins) =====
+   applyBoardTheme() in game.js adds .arena-themed to the .board and sets the
+   per-city vars inline (--tile-bg, --tile-shadow, --board-glow, --board-pulse,
+   --tile-text) straight from the ARENAS table, so themes scale to any number
+   of cities without a CSS rule per index. The animation below reads them. */
 
 /* Per-city ambient animation: a breathing glow + a slow drifting light blob
    behind the tiles. Each city's --board-pulse gives it its own rhythm. */
-.board[class*="arena-theme-"] {
+.board.arena-themed {
     position: relative;
     overflow: hidden;
     animation: boardGlow var(--board-pulse, 6s) ease-in-out infinite;
 }
 
-.board[class*="arena-theme-"]::before {
+.board.arena-themed::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -576,7 +566,7 @@
     animation: boardDrift var(--board-pulse, 6s) ease-in-out infinite alternate;
 }
 
-.board[class*="arena-theme-"] .letter-tile {
+.board.arena-themed .letter-tile {
     z-index: 1;
 }
 
@@ -591,8 +581,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .board[class*="arena-theme-"],
-    .board[class*="arena-theme-"]::before { animation: none; }
+    .board.arena-themed,
+    .board.arena-themed::before { animation: none; }
 }
 
 .current-word-display {
@@ -1136,6 +1126,81 @@
 .shop-owned .icon svg {
     width: 1.1em;
     height: 1.1em;
+}
+
+/* ===== Get-coins section: rewarded ad + mock coin packages ===== */
+.pack-emoji {
+    font-size: 2.2em;
+    line-height: 1;
+    width: 52px;
+    text-align: center;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+}
+
+.ad-card {
+    background: linear-gradient(135deg, rgba(57, 255, 106, 0.14), rgba(18, 201, 107, 0.12));
+    border-color: rgba(57, 255, 106, 0.4);
+}
+
+.pack-card {
+    background: linear-gradient(135deg, rgba(255, 214, 10, 0.12), rgba(255, 159, 0, 0.12));
+    border-color: rgba(255, 214, 10, 0.4);
+}
+
+.green-buy-btn {
+    background: var(--grad-green);
+    box-shadow: var(--shadow-depth-sm);
+}
+
+.price-btn {
+    background: var(--grad-gold);
+    min-width: 76px;
+    justify-content: center;
+    box-shadow: var(--shadow-depth-sm);
+}
+
+/* ===== Rewarded-ad countdown modal ===== */
+.ad-box {
+    max-width: 320px;
+}
+
+.ad-ring {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 4px auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 3em;
+    font-weight: 800;
+    color: var(--neon-cyan-deep);
+}
+
+/* the spinning "loading" ring around the countdown number */
+.ad-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 8px solid rgba(0, 229, 255, 0.18);
+    border-top-color: var(--neon-cyan);
+    animation: mpSpin 1s linear infinite;
+}
+
+.ad-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.3em;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+}
+
+.ad-sub {
+    color: #555;
+    font-weight: 600;
+    font-size: 0.95em;
 }
 
 /* Home avatar */
