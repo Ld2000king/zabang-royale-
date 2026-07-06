@@ -109,28 +109,27 @@ const BOT_NAMES = ['דני', 'מיכל', 'אורי', 'נועה', 'יוסי'];
 const TROPHIES_PER_ARENA = 200;
 // A tour of Israel from a quiet farming colony up to the glittering diamond
 // exchange - 16 cities, one per 200-trophy tier (arena 15 = 3000+). Each city
-// carries its character (tagline + motif) plus its own board skin: two gradient
-// stops (c1->c2), an ambient glow color, and a pulse rhythm - calm 7s villages
-// through the 3.5s nonstop Tel Aviv. textLight flips tile text to white where
-// the gradient is too dark for the default dark text. applyBoardTheme() reads
-// these straight into inline CSS vars, so adding cities needs no CSS changes.
+// carries its character (tagline + motif) plus its own board skin: a solid
+// flat tile color and a soft accent tint for the board's border/background
+// (no animation - see applyBoardTheme). textLight flips tile text to white
+// where the flat color is too dark for the default dark-on-light text.
 const ARENAS = [
-    { name: 'מזכרת בתיה',  tagline: 'מושבה חקלאית ותיקה',  motif: '🌾', c1: '#7ed957', c2: '#3a9d3a', glow: 'rgba(126, 217, 87, 0.5)',  pulse: '7s' },    // 0-199
-    { name: 'אשדוד',        tagline: 'עיר נמל דרומית',       motif: '⚓', c1: '#29b6f6', c2: '#0277bd', glow: 'rgba(41, 182, 246, 0.5)',  pulse: '6.5s', textLight: true }, // 200-399
-    { name: 'באר שבע',      tagline: 'בירת הנגב',            motif: '🏜️', c1: '#e8c07d', c2: '#c8862e', glow: 'rgba(232, 192, 125, 0.5)', pulse: '7s' },    // 400-599
-    { name: 'חיפה',         tagline: 'עיר הכרמל',            motif: '🌲', c1: '#2ee6a0', c2: '#12907a', glow: 'rgba(46, 230, 160, 0.5)',  pulse: '6s' },    // 600-799
-    { name: 'ראשון לציון',  tagline: 'עיר יין ומייסדים',     motif: '🍷', c1: '#e0567a', c2: '#8e1f45', glow: 'rgba(224, 86, 122, 0.55)', pulse: '6s', textLight: true }, // 800-999
-    { name: 'תל אביב',      tagline: 'העיר שלא נחה',         motif: '🏙️', c1: '#ff6ec7', c2: '#b3199e', glow: 'rgba(255, 110, 199, 0.55)', pulse: '3.5s', textLight: true }, // 1000-1199
-    { name: 'ירושלים',      tagline: 'בירת הנצח',            motif: '👑', c1: '#ffd76a', c2: '#d99a2b', glow: 'rgba(255, 214, 10, 0.6)',   pulse: '6.5s' }, // 1200-1399
-    { name: 'אילת',         tagline: 'עיר הנופש האדומה',     motif: '🐠', c1: '#ff8a5c', c2: '#e0492e', glow: 'rgba(255, 138, 92, 0.5)',   pulse: '5s' },   // 1400-1599
-    { name: 'נצרת',         tagline: 'פנינת הגליל',          motif: '⛪', c1: '#4db6ac', c2: '#00695c', glow: 'rgba(77, 182, 172, 0.5)',   pulse: '6.5s', textLight: true }, // 1600-1799
-    { name: 'טבריה',        tagline: 'עיר הכנרת',            motif: '🌊', c1: '#4dd0e1', c2: '#00838f', glow: 'rgba(77, 208, 225, 0.5)',   pulse: '5.5s' }, // 1800-1999
-    { name: 'אשקלון',       tagline: 'עיר חוף עתיקה',        motif: '🏖️', c1: '#7fd4e8', c2: '#2a8fb0', glow: 'rgba(127, 212, 232, 0.5)',  pulse: '6s' },   // 2000-2199
-    { name: 'נתניה',        tagline: 'עיר היהלומים',         motif: '💎', c1: '#90caf9', c2: '#5c6bc0', glow: 'rgba(144, 202, 249, 0.55)', pulse: '5s', textLight: true }, // 2200-2399
-    { name: 'הרצליה',       tagline: 'עיר הייטק והים',       motif: '🏄', c1: '#4dd0ff', c2: '#7b3ff2', glow: 'rgba(77, 208, 255, 0.55)',  pulse: '4.5s', textLight: true }, // 2400-2599
-    { name: 'פתח תקווה',    tagline: 'אם המושבות',           motif: '🏭', c1: '#ffb74d', c2: '#c17b1e', glow: 'rgba(255, 183, 77, 0.5)',   pulse: '6s' },   // 2600-2799
-    { name: 'רעננה',        tagline: 'עיר ירוקה ומטופחת',    motif: '🌳', c1: '#9ccc65', c2: '#4a8c2a', glow: 'rgba(156, 204, 101, 0.5)',  pulse: '5.5s' }, // 2800-2999
-    { name: 'רמת גן',       tagline: 'עיר הבורסה והיהלומים', motif: '💠', c1: '#b388ff', c2: '#7b1fa2', glow: 'rgba(179, 136, 255, 0.6)',  pulse: '4s', textLight: true }  // 3000+
+    { name: 'מזכרת בתיה',  tagline: 'מושבה חקלאית ותיקה',  motif: '🌾', tile: '#4CAF7D', accent: 'rgba(76, 175, 125, 0.35)' },   // 0-199
+    { name: 'אשדוד',        tagline: 'עיר נמל דרומית',       motif: '⚓', tile: '#2E86C1', accent: 'rgba(46, 134, 193, 0.35)', textLight: true }, // 200-399
+    { name: 'באר שבע',      tagline: 'בירת הנגב',            motif: '🏜️', tile: '#C8952E', accent: 'rgba(200, 149, 46, 0.35)' },   // 400-599
+    { name: 'חיפה',         tagline: 'עיר הכרמל',            motif: '🌲', tile: '#1F9A7A', accent: 'rgba(31, 154, 122, 0.35)', textLight: true }, // 600-799
+    { name: 'ראשון לציון',  tagline: 'עיר יין ומייסדים',     motif: '🍷', tile: '#A83B5C', accent: 'rgba(168, 59, 92, 0.35)',  textLight: true }, // 800-999
+    { name: 'תל אביב',      tagline: 'העיר שלא נחה',         motif: '🏙️', tile: '#B23F94', accent: 'rgba(178, 63, 148, 0.35)', textLight: true }, // 1000-1199
+    { name: 'ירושלים',      tagline: 'בירת הנצח',            motif: '👑', tile: '#C9A02B', accent: 'rgba(201, 160, 43, 0.35)' },   // 1200-1399
+    { name: 'אילת',         tagline: 'עיר הנופש האדומה',     motif: '🐠', tile: '#CC5A38', accent: 'rgba(204, 90, 56, 0.35)',  textLight: true }, // 1400-1599
+    { name: 'חדרה',         tagline: 'שער השרון',            motif: '🌉', tile: '#8A7355', accent: 'rgba(138, 115, 85, 0.35)', textLight: true }, // 1600-1799
+    { name: 'טבריה',        tagline: 'עיר הכנרת',            motif: '🌊', tile: '#227C8F', accent: 'rgba(34, 124, 143, 0.35)', textLight: true }, // 1800-1999
+    { name: 'אשקלון',       tagline: 'עיר חוף עתיקה',        motif: '🏖️', tile: '#3E8FA8', accent: 'rgba(62, 143, 168, 0.35)', textLight: true }, // 2000-2199
+    { name: 'נתניה',        tagline: 'עיר היהלומים',         motif: '💎', tile: '#4A5FBD', accent: 'rgba(74, 95, 189, 0.35)',  textLight: true }, // 2200-2399
+    { name: 'הרצליה',       tagline: 'עיר הייטק והים',       motif: '🏄', tile: '#5B4FCF', accent: 'rgba(91, 79, 207, 0.35)',  textLight: true }, // 2400-2599
+    { name: 'פתח תקווה',    tagline: 'אם המושבות',           motif: '🏭', tile: '#C17B34', accent: 'rgba(193, 123, 52, 0.35)' },   // 2600-2799
+    { name: 'רעננה',        tagline: 'עיר ירוקה ומטופחת',    motif: '🌳', tile: '#5E8A3A', accent: 'rgba(94, 138, 58, 0.35)',  textLight: true }, // 2800-2999
+    { name: 'רמת גן',       tagline: 'עיר הבורסה והיהלומים', motif: '💠', tile: '#7B4FB0', accent: 'rgba(123, 79, 176, 0.35)', textLight: true }  // 3000+
 ];
 
 // highest arena the trophy count reaches, capped at the last defined arena.
@@ -156,21 +155,18 @@ function preferredThemeIndex() {
     return Math.min(gameState.preferredTheme || 0, getArenaIndex(gameState.trophies));
 }
 
-// Applies an arena skin to a board container by writing the city's colors
-// straight into inline CSS vars (the .arena-themed class turns on the ambient
-// animation that reads them). renderBoard only clears innerHTML, so these
-// survive re-renders within a round.
+// Applies an arena skin to a board container by writing the city's flat tile
+// color and a soft static accent tint into inline CSS vars (no animation -
+// see .arena-themed in game.css). renderBoard only clears innerHTML, so
+// these survive re-renders within a round.
 function applyBoardTheme(boardId, themeIndex) {
     const el = document.getElementById(boardId);
     if (!el) return;
     const arena = ARENAS[themeIndex] || ARENAS[0];
     el.classList.add('arena-themed');
-    el.style.setProperty('--tile-bg', `linear-gradient(135deg, ${arena.c1}, ${arena.c2})`);
-    el.style.setProperty('--tile-shadow', `0 0 12px ${arena.glow}`);
-    el.style.setProperty('--board-glow', arena.glow);
-    el.style.setProperty('--board-pulse', arena.pulse);
+    el.style.setProperty('--tile-bg', arena.tile);
+    el.style.setProperty('--board-accent', arena.accent);
     el.style.setProperty('--tile-text', arena.textLight ? '#fff' : 'var(--text-dark)');
-    el.style.setProperty('--board-bg', 'rgba(8, 12, 24, 0.5)');
 }
 
 // Game State
@@ -314,6 +310,9 @@ function updateHomeUI() {
     if (taglineEl) taglineEl.textContent = arena.tagline;
     const motifEl = document.getElementById('homeCityMotif');
     if (motifEl) motifEl.textContent = arena.motif;
+    // the banner expresses the current city's identity via a soft accent tint
+    const bannerEl = document.querySelector('.arena-banner');
+    if (bannerEl) bannerEl.style.setProperty('--banner-accent', arena.accent);
     renderThemeSelector();
 }
 

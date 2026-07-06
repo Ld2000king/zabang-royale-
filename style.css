@@ -1,55 +1,65 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800;900&family=Poppins:wght@300;400;600;700;800&display=swap');
 
 :root {
-    /* Neon core palette */
-    --neon-cyan: #00e5ff;
-    --neon-cyan-deep: #00a3ff;
-    --neon-pink: #ff2ec4;
-    --neon-magenta: #d400ff;
-    --neon-lime: #39ff6a;
-    --neon-lime-deep: #12c96b;
-    --neon-orange: #ff7a1a;
-    --neon-orange-deep: #ff9f00;
-    --neon-gold: #ffd60a;
-    --neon-gold-deep: #ffb700;
-    --neon-purple: #8b5cf6;
-    --neon-purple-deep: #6d28d9;
-    --neon-red: #ff3b5c;
-    --neon-red-deep: #d90429;
+    /* Core accent palette - solid matte tones (Material 3 / iOS native feel).
+       Variable names kept from the earlier neon iteration to avoid touching
+       every call site; the VALUES are now flat, deep, premium colors instead
+       of bright neon. */
+    --neon-cyan: #4E7FD6;
+    --neon-cyan-deep: #3A65B8;
+    --neon-pink: #C24E7A;
+    --neon-magenta: #9C4394;
+    --neon-lime: #147A4A;
+    --neon-lime-deep: #2FBE85;
+    --neon-orange: #A85A1E;
+    --neon-orange-deep: #8F4A16;
+    --neon-gold: #C99A2E;
+    --neon-gold-deep: #A87F22;
+    --neon-purple: #5B4FCF;
+    --neon-purple-deep: #4A3FB0;
+    --neon-red: #B3372E;
+    --neon-red-deep: #952B23;
 
-    /* Gradients (glossy arcade buttons) */
-    --grad-blue: linear-gradient(135deg, var(--neon-cyan), var(--neon-cyan-deep));
-    --grad-green: linear-gradient(135deg, var(--neon-lime), var(--neon-lime-deep));
-    --grad-orange: linear-gradient(135deg, var(--neon-orange-deep), var(--neon-orange));
-    --grad-gold: linear-gradient(135deg, var(--neon-gold), var(--neon-gold-deep));
-    --grad-purple: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-deep));
-    --grad-pink: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
-    --grad-red: linear-gradient(135deg, var(--neon-red), var(--neon-red-deep));
+    /* Solid matte button/surface fills (flat - no gradients, per the app's
+       Material-style design). Play = emerald, Shop = deep gold,
+       Profile = royal blue, Close/Back = matte crimson. */
+    --grad-blue: var(--neon-cyan-deep);
+    --grad-green: var(--neon-lime);
+    --grad-orange: var(--neon-orange);
+    --grad-gold: var(--neon-gold);
+    --grad-purple: var(--neon-purple);
+    --grad-pink: var(--neon-pink);
+    --grad-red: var(--neon-red);
 
-    /* Glossy highlight overlay (top sheen) layered on buttons/tiles */
-    --gloss-overlay: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 45%);
+    /* Backgrounds - a flat, matte dark obsidian scale. Each surface tier is
+       just slightly lighter than the one behind it, so cards read as
+       distinct material layers without needing bright borders. */
+    --bg-deep: #121317;
+    --bg-deep-2: #0c0d10;
+    --panel-light: #1C1E24;
+    --surface-2: #262933;
+    --surface-3: #2E313D;
 
-    /* Backgrounds */
-    --bg-deep: #0a0e17;
-    --bg-deep-2: #141a2e;
-    --panel-light: rgba(255, 255, 255, 0.96);
-
-    /* Text */
-    --text-dark: #14162b;
+    /* Text - light-on-dark now that surfaces are dark. text-secondary is for
+       descriptions/captions/subtitles. */
+    --text-dark: #F1F2F5;
+    --text-secondary: #A6ABB8;
     --text-light: #ffffff;
 
-    /* Glow shadows - the "arcade" signature, each layered with a neutral dark
-       shadow underneath so elements feel physically lifted, not just neon-flat */
-    --glow-cyan: 0 0 8px rgba(0,229,255,.8), 0 0 24px rgba(0,229,255,.5), 0 8px 24px rgba(0,163,255,.35), var(--shadow-depth-sm);
-    --glow-green: 0 0 8px rgba(57,255,106,.8), 0 0 24px rgba(57,255,106,.5), 0 8px 24px rgba(18,201,107,.35), var(--shadow-depth-sm);
-    --glow-orange: 0 0 8px rgba(255,159,0,.8), 0 0 24px rgba(255,122,26,.5), 0 8px 24px rgba(255,122,26,.35), var(--shadow-depth-sm);
-    --glow-gold: 0 0 8px rgba(255,214,10,.8), 0 0 24px rgba(255,183,0,.5), 0 8px 24px rgba(255,183,0,.35), var(--shadow-depth-sm);
-    --glow-purple: 0 0 8px rgba(139,92,246,.8), 0 0 24px rgba(109,40,217,.5), 0 8px 24px rgba(109,40,217,.35), var(--shadow-depth-sm);
-    --glow-red: 0 0 8px rgba(255,59,92,.8), 0 0 24px rgba(217,4,41,.5), 0 8px 24px rgba(217,4,41,.35), var(--shadow-depth-sm);
+    /* Soft, low-opacity accent shadows - a gentle tint hinting at the
+       element's color, always paired with a neutral depth shadow for real,
+       physical elevation instead of a neon halo. */
+    --glow-cyan: 0 8px 22px rgba(58, 101, 184, 0.22), var(--shadow-depth-sm);
+    --glow-green: 0 8px 22px rgba(22, 135, 82, 0.22), var(--shadow-depth-sm);
+    --glow-orange: 0 8px 22px rgba(176, 101, 31, 0.22), var(--shadow-depth-sm);
+    --glow-gold: 0 8px 22px rgba(168, 127, 34, 0.22), var(--shadow-depth-sm);
+    --glow-purple: 0 8px 22px rgba(74, 63, 176, 0.22), var(--shadow-depth-sm);
+    --glow-red: 0 8px 22px rgba(149, 43, 35, 0.22), var(--shadow-depth-sm);
 
     /* Borders and radii - a 3-tier modern scale: compact controls, cards/
-       buttons, and big popups/the board */
-    --border-thick: 3px;
+       buttons, and big popups/the board. Hairline borders replace the old
+       3px neon outlines. */
+    --border-thick: 1px;
     --radius-sm: 14px;
     --radius-card: 24px;
     --radius-btn: 18px;
@@ -63,12 +73,12 @@
     /* App "device" frame - mobile-first, centered on wider screens */
     --app-max-width: 460px;
 
-    /* Soft neutral depth shadows, layered under the colored glows below for
-       real physical depth instead of flat neon */
-    --shadow-depth-sm: 0 6px 16px rgba(0, 0, 0, 0.3);
-    --shadow-depth-md: 0 10px 26px rgba(0, 0, 0, 0.38);
-    --shadow-depth-lg: 0 20px 50px rgba(0, 0, 0, 0.48);
-    --shadow-frame: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    /* Soft neutral depth shadows - realistic, diffused, low-opacity, for
+       physical elevation without any neon color cast */
+    --shadow-depth-sm: 0 8px 20px rgba(0, 0, 0, 0.18);
+    --shadow-depth-md: 0 10px 26px rgba(0, 0, 0, 0.22);
+    --shadow-depth-lg: 0 16px 36px rgba(0, 0, 0, 0.28);
+    --shadow-frame: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
 * {
@@ -84,13 +94,9 @@ html, body {
 body {
     font-family: var(--font-body);
     /* The "out of focus" backdrop that shows around the app frame on wide
-       (desktop) viewports - a moody dark gradient plus soft ambient color
-       blobs, distinct from the app surface itself so the frame pops */
-    background:
-        radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.10), transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.10), transparent 45%),
-        linear-gradient(160deg, #05070d 0%, var(--bg-deep) 55%, var(--bg-deep-2) 100%);
-    background-attachment: fixed;
+       (desktop) viewports - a flat, solid matte obsidian, distinct from the
+       app surface itself so the frame pops without any flashy gradient */
+    background: var(--bg-deep-2);
     min-height: 100vh;
     min-height: 100dvh;
     color: #fff;
@@ -128,7 +134,7 @@ button {
     min-height: 100dvh;
     max-width: var(--app-max-width);
     margin: 0 auto;
-    background: linear-gradient(180deg, var(--bg-deep-2) 0%, var(--bg-deep) 100%);
+    background: var(--bg-deep);
     box-shadow: var(--shadow-frame);
     border-radius: var(--radius-frame);
     overflow: hidden;
