@@ -382,6 +382,12 @@
         </div>
     </div>
 
+    <!-- מוזיקת רקע - לופ רציף אחד לכל המשחק. ראו initMusic()/toggleMusic() ב-game.js -->
+    <audio id="bgMusic" src="./background-music.mp3" loop preload="auto"></audio>
+
+    <!-- כפתור צף להשתקה/הפעלת מוזיקה, מוצג בכל מסך -->
+    <button id="musicToggleBtn" class="music-toggle-btn" onclick="toggleMusic()" aria-label="השתקת מוזיקה" title="מוזיקה"></button>
+
     <button class="accessibility-link" onclick="showAccessibilityStatement()">נגישות / Accessibility</button>
 
     <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>

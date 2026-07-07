@@ -182,7 +182,8 @@ let gameState = {
     avatarId: 'dan',
     trophies: 0,
     preferredTheme: 0,
-    ownedAvatars: []
+    ownedAvatars: [],
+    musicEnabled: true   // actual playback still gated on a user gesture, see initMusic()
 };
 
 // price of a premium ("cooler") profile picture in the shop
@@ -235,6 +236,7 @@ window.addEventListener('load', () => {
     mergeExtraWords();
     loadCustomWords();
     updateHomeUI();
+    initMusic();
 });
 
 // Merge the words.js expansion pack (EXTRA_WORDS) into the dictionary. Words
@@ -258,6 +260,7 @@ function loadGameState() {
     if (typeof gameState.trophies !== 'number') gameState.trophies = 0;
     if (typeof gameState.preferredTheme !== 'number') gameState.preferredTheme = 0;
     if (!Array.isArray(gameState.ownedAvatars)) gameState.ownedAvatars = [];
+    if (typeof gameState.musicEnabled !== 'boolean') gameState.musicEnabled = true;
     if (!gameState.inventory) gameState.inventory = {};
     // migrate the old single-counter hint field (pre-multi-item inventory) into the new shape
     if (typeof gameState.hints === 'number') {
@@ -272,6 +275,53 @@ function loadGameState() {
 
 function saveGameState() {
     localStorage.setItem('zabangState', JSON.stringify(gameState));
+}
+
+// ===== Background music =====
+// A single continuous loop for the whole app - no per-screen switching, since
+// showScreen() never touches anything outside #app and #bgMusic/#musicToggleBtn
+// live outside #app as persistent global chrome.
+function initMusic() {
+    updateMusicButtonUI();
+    const audio = document.getElementById('bgMusic');
+    if (!audio) return;
+    audio.volume = 0.5;
+    attemptPlay();
+    // Browsers block audio.play() before a user gesture - retry once on the
+    // first tap/keypress anywhere. Harmless no-op if the immediate attempt
+    // above already succeeded (e.g. gesture already happened).
+    const unlock = () => {
+        attemptPlay();
+        document.removeEventListener('pointerdown', unlock);
+        document.removeEventListener('keydown', unlock);
+    };
+    document.addEventListener('pointerdown', unlock, { once: true });
+    document.addEventListener('keydown', unlock, { once: true });
+}
+
+function attemptPlay() {
+    const audio = document.getElementById('bgMusic');
+    if (!audio || !gameState.musicEnabled) return;
+    const p = audio.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {}); // autoplay blocked or file missing - ignore silently
+}
+
+function toggleMusic() {
+    gameState.musicEnabled = !gameState.musicEnabled;
+    saveGameState();
+    const audio = document.getElementById('bgMusic');
+    if (audio) {
+        if (gameState.musicEnabled) attemptPlay();
+        else audio.pause();
+    }
+    updateMusicButtonUI();
+}
+
+function updateMusicButtonUI() {
+    const btn = document.getElementById('musicToggleBtn');
+    if (!btn) return;
+    btn.innerHTML = icon(gameState.musicEnabled ? 'musicOn' : 'musicOff');
+    btn.classList.toggle('muted', !gameState.musicEnabled);
 }
 
 // The admin/dev account. Grants infinite coins, infinite trophies, and
