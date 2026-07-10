@@ -388,6 +388,14 @@
     transform: scale(0.92);
 }
 
+/* The pause button is the primary in-game control (top-right), so make it a
+   larger, easy-to-hit target than the plain exit button. */
+.pause-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 1.9em;
+}
+
 .help-btn {
     position: fixed;
     top: calc(16px + env(safe-area-inset-top));

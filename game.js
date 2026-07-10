@@ -1057,8 +1057,12 @@ function startBattleRound() {
     // bots mode (multiplayer mode hides both since they don't apply to real players)
     const shuffleBtn = document.getElementById('battleShuffleBtn');
     if (shuffleBtn) shuffleBtn.style.display = '';
+    // bots mode: pause button is the top-right control; exit is via the pause
+    // menu, so hide the header home button (multiplayer re-shows it below)
     const battlePauseBtn = document.getElementById('battlePauseBtn');
     if (battlePauseBtn) battlePauseBtn.style.display = '';
+    const battleExitBtn = document.getElementById('battleExitBtn');
+    if (battleExitBtn) battleExitBtn.style.display = 'none';
     renderBoard('battleBoard');
     applyBoardTheme('battleBoard', preferredThemeIndex());
     updateBattleUI();

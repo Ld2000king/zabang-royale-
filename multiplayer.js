@@ -221,11 +221,14 @@ function onRoomUpdate(room) {
             renderBoard('battleBoard');
             applyBoardTheme('battleBoard', room.boardTheme || 0);
             // "shuffle opponents' score" makes no sense against real people - hide it.
-            // Pause is also disabled in multiplayer (can't freeze real opponents' clocks).
+            // Pause is also disabled in multiplayer (can't freeze real opponents'
+            // clocks), so hide the pause button and keep the direct home button.
             const shuffleBtn = document.getElementById('battleShuffleBtn');
             if (shuffleBtn) shuffleBtn.style.display = 'none';
             const battlePauseBtn = document.getElementById('battlePauseBtn');
             if (battlePauseBtn) battlePauseBtn.style.display = 'none';
+            const battleExitBtn = document.getElementById('battleExitBtn');
+            if (battleExitBtn) battleExitBtn.style.display = '';
             showScreen('battleScreen');
             startMultiplayerTimer(room);
         }
