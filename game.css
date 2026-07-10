@@ -411,7 +411,13 @@
 
 .music-toggle-btn {
     position: fixed;
-    top: calc(16px + env(safe-area-inset-top));
+    /* Bottom-right FAB. Deliberately NOT top-right: every in-game/shop/profile
+       screen already has an exit (home) button in its top-right corner, and the
+       game screen's top-left is taken by the score pill - so no top corner is
+       free across all screens. The bottom-right corner is clear everywhere
+       (the accessibility link is centered), so a single consistent position
+       here avoids all overlaps without per-screen logic. */
+    bottom: calc(16px + env(safe-area-inset-bottom));
     /* Mirror of .help-btn's frame-relative formula, right corner instead of left */
     right: calc(16px + env(safe-area-inset-right) + max(0px, (100vw - var(--app-max-width)) / 2));
     background: rgba(255, 255, 255, 0.1);
