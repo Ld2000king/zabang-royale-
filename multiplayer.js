@@ -220,9 +220,12 @@ function onRoomUpdate(room) {
             document.getElementById('playerBattleScore').textContent = currentGame.playerScore;
             renderBoard('battleBoard');
             applyBoardTheme('battleBoard', room.boardTheme || 0);
-            // "shuffle opponents' score" makes no sense against real people - hide it
+            // "shuffle opponents' score" makes no sense against real people - hide it.
+            // Pause is also disabled in multiplayer (can't freeze real opponents' clocks).
             const shuffleBtn = document.getElementById('battleShuffleBtn');
             if (shuffleBtn) shuffleBtn.style.display = 'none';
+            const battlePauseBtn = document.getElementById('battlePauseBtn');
+            if (battlePauseBtn) battlePauseBtn.style.display = 'none';
             showScreen('battleScreen');
             startMultiplayerTimer(room);
         }

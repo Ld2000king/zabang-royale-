@@ -214,6 +214,7 @@ let currentGame = {
     selectedIndices: new Set(),
     currentWord: '',
     gameActive: false,
+    paused: false,
     timer: null,
     freezeLeft: 0,
     selectedLetters: []
@@ -412,6 +413,9 @@ function showScreen(screenId) {
 function goHome() {
     if (currentGame.timer) clearInterval(currentGame.timer);
     currentGame.gameActive = false; // stop any game loops still checking this flag
+    currentGame.paused = false;      // clear any pause state / overlay when leaving
+    const pauseOverlay = document.getElementById('pauseOverlay');
+    if (pauseOverlay) pauseOverlay.style.display = 'none';
     stopBotAI();                     // kill the bots interval so it can't leak into a later game
     // Multiplayer: detach Firebase listeners / leave the room before going home
     if (currentGame.mode === 'multiplayer' && typeof leaveMultiplayerRoom === 'function') {
@@ -803,6 +807,34 @@ function startTimer(mode) {
     }, 1000);
 }
 
+// ===== Pause (single-player & bots battle only) =====
+// Multiplayer can't be paused - you can't freeze real opponents' clocks.
+function pauseGame() {
+    if (currentGame.mode === 'multiplayer') return;
+    if (!currentGame.gameActive || currentGame.paused) return;
+    currentGame.paused = true;
+    currentGame.gameActive = false;      // blocks board input while paused
+    if (currentGame.timer) clearInterval(currentGame.timer);
+    stopBotAI();                          // freeze the bots too (no-op in single mode)
+    document.getElementById('pauseOverlay').style.display = 'flex';
+}
+
+function resumeGame() {
+    if (!currentGame.paused) return;
+    currentGame.paused = false;
+    currentGame.gameActive = true;
+    document.getElementById('pauseOverlay').style.display = 'none';
+    // resume from the preserved timeLeft; restart the bots only in battle mode
+    startTimer(currentGame.mode === 'single' ? 'single' : 'battle');
+    if (currentGame.mode === 'battle') startBotAI();
+}
+
+function quitFromPause() {
+    currentGame.paused = false;
+    document.getElementById('pauseOverlay').style.display = 'none';
+    goHome();
+}
+
 function endRound(mode) {
     currentGame.gameActive = false;
 
@@ -1021,10 +1053,12 @@ function startBattleRound() {
 
     showScreen('battleScreen');
     document.getElementById('roundBadge').textContent = `סיבוב ${battleState.currentRound}/5`;
-    // ensure the "shuffle opponents" power-up is visible in bots mode
-    // (multiplayer mode hides it since it doesn't apply to real players)
+    // ensure the "shuffle opponents" power-up + pause button are visible in
+    // bots mode (multiplayer mode hides both since they don't apply to real players)
     const shuffleBtn = document.getElementById('battleShuffleBtn');
     if (shuffleBtn) shuffleBtn.style.display = '';
+    const battlePauseBtn = document.getElementById('battlePauseBtn');
+    if (battlePauseBtn) battlePauseBtn.style.display = '';
     renderBoard('battleBoard');
     applyBoardTheme('battleBoard', preferredThemeIndex());
     updateBattleUI();

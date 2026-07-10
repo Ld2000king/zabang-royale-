@@ -358,7 +358,14 @@
     gap: 10px;
 }
 
-.exit-btn {
+.header-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.exit-btn,
+.pause-btn {
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.3);
     color: white;
@@ -371,11 +378,13 @@
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
 }
 
-.exit-btn:hover {
+.exit-btn:hover,
+.pause-btn:hover {
     background: rgba(255, 255, 255, 0.3);
 }
 
-.exit-btn:active {
+.exit-btn:active,
+.pause-btn:active {
     transform: scale(0.92);
 }
 

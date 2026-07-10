@@ -200,7 +200,10 @@
         <!-- Single Player Game -->
         <div id="gameScreen" class="screen">
             <div class="game-header">
-                <button class="exit-btn icon" onclick="goHome()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></button>
+                <div class="header-btns">
+                    <button class="exit-btn icon" onclick="goHome()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></button>
+                    <button class="pause-btn icon" onclick="pauseGame()" title="השהה" aria-label="השהה"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 5 V19"/><path d="M15 5 V19"/></svg></button>
+                </div>
                 <div class="timer-display" id="timerDisplay">60</div>
                 <div class="score-display" id="scoreDisplay">0</div>
             </div>
@@ -224,7 +227,10 @@
         <!-- Battle Royale Game -->
         <div id="battleScreen" class="screen">
             <div class="battle-header">
-                <button class="exit-btn icon" onclick="goHome()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></button>
+                <div class="header-btns">
+                    <button class="exit-btn icon" onclick="goHome()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></button>
+                    <button class="pause-btn icon" id="battlePauseBtn" onclick="pauseGame()" title="השהה" aria-label="השהה"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 5 V19"/><path d="M15 5 V19"/></svg></button>
+                </div>
                 <div class="round-badge" id="roundBadge">סיבוב 1/5</div>
                 <div class="timer-display" id="battleTimerDisplay">60</div>
             </div>
@@ -379,6 +385,17 @@
         <div class="confirm-box">
             <p id="infoText"></p>
             <button class="btn-large blue-btn" onclick="closeInfoModal()">הבנתי</button>
+        </div>
+    </div>
+
+    <!-- Pause overlay (single-player & bots battle only; see pauseGame() in game.js) -->
+    <div id="pauseOverlay" class="confirm-overlay" style="display:none;">
+        <div class="confirm-box">
+            <p>המשחק מושהה</p>
+            <div class="confirm-actions">
+                <button class="btn-large green-btn" onclick="resumeGame()">המשך ›</button>
+                <button class="close-modal-btn" onclick="quitFromPause()">יציאה</button>
+            </div>
         </div>
     </div>
 
