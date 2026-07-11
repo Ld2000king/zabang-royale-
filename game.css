@@ -1226,6 +1226,69 @@
     border-bottom: none;
 }
 
+/* ===== Leaderboard ===== */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.lb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(57, 255, 106, 0.08));
+    border: 2px solid rgba(0, 229, 255, 0.2);
+    border-radius: 12px;
+}
+
+.lb-row.lb-me {
+    border-color: var(--neon-gold);
+    background: linear-gradient(135deg, rgba(255, 214, 10, 0.14), rgba(255, 159, 0, 0.1));
+}
+
+.lb-rank {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15em;
+    min-width: 30px;
+    text-align: center;
+    color: var(--text-dark);
+}
+
+.lb-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.lb-avatar svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.lb-name {
+    flex: 1;
+    font-weight: 700;
+    color: var(--text-dark);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lb-score {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15em;
+    color: var(--neon-cyan-deep);
+}
+
 /* Messages */
 .message {
     position: fixed;

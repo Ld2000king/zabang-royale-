@@ -63,6 +63,9 @@
                     <button class="mega-btn blue-btn" onclick="goToProfile()">
                         <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7 Z"/></svg></span> פרופיל
                     </button>
+                    <button class="mega-btn purple-btn" onclick="showLeaderboard()">
+                        <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> טבלת דירוג
+                    </button>
                 </div>
 
                 <div class="theme-selector">
@@ -263,6 +266,7 @@
                     <span id="srCoins">+0 מטבעות</span>
                 </div>
                 <button class="btn-large blue-btn" onclick="startSinglePlayer()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 a8 8 0 1 1 2.6 5.9"/><path d="M4 18 V13 H9"/></svg></span> שחק שוב</button>
+                <button class="btn-large green-btn" onclick="showLeaderboard()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> טבלת דירוג</button>
                 <button class="btn-large purple-btn" onclick="goHome()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></span> מסך הבית</button>
             </div>
         </div>
@@ -338,6 +342,16 @@
                         <button class="close-modal-btn" onclick="adminSignOut()">התנתקות מאדמין</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Screen (best single-player scores) -->
+        <div id="leaderboardScreen" class="screen">
+            <div class="profile-container">
+                <button class="exit-btn icon" onclick="goHome()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></button>
+                <h2><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> טבלת דירוג</h2>
+                <p class="mp-hint">הניקוד הגבוה ביותר במשחק יחיד</p>
+                <div class="leaderboard-list" id="leaderboardList"></div>
             </div>
         </div>
 

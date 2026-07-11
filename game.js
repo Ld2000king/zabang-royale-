@@ -183,7 +183,9 @@ let gameState = {
     trophies: 0,
     preferredTheme: 0,
     ownedAvatars: [],
-    musicEnabled: true   // actual playback still gated on a user gesture, see initMusic()
+    musicEnabled: true,  // actual playback still gated on a user gesture, see initMusic()
+    bestSingleScore: 0,  // personal best single-player score (shown on the leaderboard)
+    playerId: null       // stable per-device id for the global leaderboard entry
 };
 
 // price of a premium ("cooler") profile picture in the shop
@@ -262,6 +264,14 @@ function loadGameState() {
     if (typeof gameState.preferredTheme !== 'number') gameState.preferredTheme = 0;
     if (!Array.isArray(gameState.ownedAvatars)) gameState.ownedAvatars = [];
     if (typeof gameState.musicEnabled !== 'boolean') gameState.musicEnabled = true;
+    if (typeof gameState.bestSingleScore !== 'number') gameState.bestSingleScore = 0;
+    // a stable per-device id so a player keeps a single leaderboard entry across
+    // sessions (getMyPlayerId() in multiplayer.js is sessionStorage-based and
+    // resets each session, so it's unsuitable for a persistent leaderboard row)
+    if (!gameState.playerId) {
+        gameState.playerId = (typeof db !== 'undefined' && db) ? db.ref().push().key
+            : 'local-' + Date.now() + Math.random().toString(36).slice(2);
+    }
     if (!gameState.inventory) gameState.inventory = {};
     // migrate the old single-counter hint field (pre-multi-item inventory) into the new shape
     if (typeof gameState.hints === 'number') {
@@ -842,6 +852,7 @@ function endRound(mode) {
         gameState.coins += Math.floor(currentGame.score / 10);
         gameState.totalScore += currentGame.score;
         gameState.gamesPlayed++;
+        maybeSubmitLeaderboardScore(); // updates bestSingleScore + writes to Firebase on a new best
         saveGameState();
         showGameOverDialog();
     } else {
@@ -855,6 +866,66 @@ function showGameOverDialog() {
     document.getElementById('srCoins').textContent = `+${Math.floor(currentGame.score / 10)} מטבעות`;
     updateHomeUI();
     showScreen('singleResultScreen');
+}
+
+// ===== Leaderboard (best single-player score, global via Firebase) =====
+// Each device keeps one row keyed by gameState.playerId; we only write when
+// the player sets a new personal best, so scores can only ever go up.
+// NOTE: like all scores in this client-authoritative game, this is
+// spoofable - fine for a casual leaderboard, not a competitive-stakes one.
+function maybeSubmitLeaderboardScore() {
+    if (currentGame.score <= 0 || currentGame.score <= (gameState.bestSingleScore || 0)) return;
+    gameState.bestSingleScore = currentGame.score; // caller (endRound) persists gameState
+    if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY || !db || !gameState.playerId) return;
+    const entry = {
+        name: gameState.playerName,
+        score: gameState.bestSingleScore,
+        avatarId: gameState.avatarId,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+    if (typeof authReady !== 'undefined') {
+        authReady.then(() => db.ref('leaderboard/' + gameState.playerId).set(entry)
+            .catch(err => console.warn('Leaderboard write failed (add a leaderboard Security Rule):', err.message)));
+    }
+}
+
+function showLeaderboard() {
+    showScreen('leaderboardScreen');
+    renderLeaderboard();
+}
+
+function renderLeaderboard() {
+    const listEl = document.getElementById('leaderboardList');
+    if (!listEl) return;
+    if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY || !db) {
+        listEl.innerHTML = '<p class="no-subs">טבלת הדירוג לא זמינה (Firebase לא מוגדר)</p>';
+        return;
+    }
+    listEl.innerHTML = '<div class="mp-spinner"></div>';
+    db.ref('leaderboard').once('value').then(snap => {
+        const rows = Object.entries(snap.val() || {})
+            .map(([id, e]) => ({ id, name: e.name || 'שחקן', score: e.score || 0, avatarId: e.avatarId }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+        if (rows.length === 0) {
+            listEl.innerHTML = '<p class="no-subs">עדיין אין תוצאות - שחק משחק יחיד כדי להיכנס לטבלה!</p>';
+            return;
+        }
+        listEl.innerHTML = rows.map((r, i) => {
+            const isMe = r.id === gameState.playerId;
+            const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+            const avatar = (typeof getAvatarById === 'function') ? getAvatarById(r.avatarId).svg : '';
+            return `<div class="lb-row${isMe ? ' lb-me' : ''}">
+                <span class="lb-rank">${rank}</span>
+                <span class="lb-avatar">${avatar}</span>
+                <span class="lb-name">${escapeHtml(r.name)}${isMe ? ' (אתה)' : ''}</span>
+                <span class="lb-score">${r.score}</span>
+            </div>`;
+        }).join('');
+    }).catch(err => {
+        listEl.innerHTML = '<p class="no-subs">שגיאה בטעינת הטבלה</p>';
+        console.warn('Leaderboard read failed (add a leaderboard Security Rule):', err.message);
+    });
 }
 
 // Power-ups
@@ -1396,6 +1467,7 @@ function renderProfile() {
         <p><strong>גביעים:</strong> ${trophiesText()}</p>
         <p><strong>עיר:</strong> ${currentArena().motif} ${currentArena().name} — ${currentArena().tagline}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
+        <p><strong>שיא משחק יחיד:</strong> ${gameState.bestSingleScore || 0}</p>
         <p><strong>משחקים:</strong> ${gameState.gamesPlayed}</p>
     `;
     renderAvatarPicker();
