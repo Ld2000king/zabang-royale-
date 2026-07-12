@@ -1972,3 +1972,205 @@
         display: none;
     }
 }
+
+/* ===========================================================================
+   Game-mode selection screen "pop" pass - matches the home screen treatment
+   (aurora backdrop, gradient heading, accent-colored mode cards, staggered
+   entrance). Scoped to #gameModeScreen and #mpChoiceScreen so every other
+   modal keeps the plain matte look.
+   ========================================================================= */
+
+/* same ambient aurora as the home screen */
+#gameModeScreen,
+#mpChoiceScreen {
+    position: relative;
+    overflow: hidden;
+}
+
+#gameModeScreen::before,
+#mpChoiceScreen::before,
+#gameModeScreen::after,
+#mpChoiceScreen::after {
+    content: '';
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+}
+
+#gameModeScreen::before,
+#mpChoiceScreen::before {
+    background: radial-gradient(circle, rgba(78, 127, 214, 0.32), transparent 65%);
+    top: -120px;
+    right: -100px;
+    animation: auroraDrift 14s ease-in-out infinite alternate;
+}
+
+#gameModeScreen::after,
+#mpChoiceScreen::after {
+    background: radial-gradient(circle, rgba(156, 67, 148, 0.26), transparent 65%);
+    bottom: -140px;
+    left: -120px;
+    animation: auroraDrift 18s ease-in-out infinite alternate-reverse;
+}
+
+#gameModeScreen .modal-content,
+#mpChoiceScreen .modal-content {
+    position: relative;
+    z-index: 1;
+    /* the same subtle diagonal sheen the home player-card got */
+    background:
+        linear-gradient(145deg, rgba(78, 127, 214, 0.08), rgba(156, 67, 148, 0.05) 60%, transparent),
+        var(--panel-light);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-top-color: rgba(255, 255, 255, 0.14);
+}
+
+/* gradient heading, same sweep as the main title */
+#gameModeScreen .modal-content h2,
+#mpChoiceScreen .modal-content h2 {
+    background: linear-gradient(100deg,
+        #6FA0F0 0%, #8B7BE8 30%, #C86FA8 50%, #8B7BE8 70%, #6FA0F0 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--text-dark); /* fallback */
+    animation: titleShimmer 6s ease-in-out infinite;
+    width: fit-content;
+}
+
+/* ---- accent-colored mode cards ----
+   Each card gets its own identity color on an inset side bar (inline-start,
+   so it sits on the right in RTL) + a matching icon chip, mirroring the home
+   buttons: single=blue, battle royale=orange, friends=green, random=purple;
+   create room=green, join room=blue. --mode-accent drives everything. */
+#gameModeScreen .mode-option,
+#mpChoiceScreen .mode-option {
+    position: relative;
+    overflow: hidden; /* clips the shine sweep */
+    border-inline-start: 4px solid var(--mode-accent, var(--neon-cyan));
+}
+
+#gameModeScreen .mode-option:nth-of-type(1) { --mode-accent: #4E7FD6; --mode-accent-soft: rgba(78, 127, 214, 0.16); }
+#gameModeScreen .mode-option:nth-of-type(2) { --mode-accent: #C77B2E; --mode-accent-soft: rgba(199, 123, 46, 0.16); }
+#gameModeScreen .mode-option:nth-of-type(3) { --mode-accent: #2FBE85; --mode-accent-soft: rgba(47, 190, 133, 0.16); }
+#gameModeScreen .mode-option:nth-of-type(4) { --mode-accent: #8B7BE8; --mode-accent-soft: rgba(139, 123, 232, 0.16); }
+#mpChoiceScreen .mode-option:nth-of-type(1) { --mode-accent: #2FBE85; --mode-accent-soft: rgba(47, 190, 133, 0.16); }
+#mpChoiceScreen .mode-option:nth-of-type(2) { --mode-accent: #4E7FD6; --mode-accent-soft: rgba(78, 127, 214, 0.16); }
+
+/* icon sits in a soft rounded chip tinted with the card's accent */
+#gameModeScreen .mode-icon,
+#mpChoiceScreen .mode-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--mode-accent-soft, rgba(78, 127, 214, 0.16));
+    color: var(--mode-accent, var(--neon-cyan));
+    font-size: 1.9em;
+    flex: 0 0 auto;
+}
+
+/* hover: accent-tinted lift + the home buttons' light sweep */
+#gameModeScreen .mode-option:hover,
+#mpChoiceScreen .mode-option:hover {
+    background:
+        linear-gradient(145deg, var(--mode-accent-soft, rgba(78, 127, 214, 0.16)), transparent 70%),
+        var(--surface-3);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+#gameModeScreen .mode-option::after,
+#mpChoiceScreen .mode-option::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(105deg,
+        transparent, rgba(255, 255, 255, 0.12), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    transition: left 0.5s ease;
+}
+
+#gameModeScreen .mode-option:hover::after,
+#mpChoiceScreen .mode-option:hover::after {
+    left: 130%;
+}
+
+/* the chevron picks up the accent and nudges outward (left, in RTL) on hover */
+#gameModeScreen .mode-arrow,
+#mpChoiceScreen .mode-arrow {
+    color: var(--mode-accent, var(--text-dark));
+    transition: transform 0.2s ease;
+}
+
+#gameModeScreen .mode-option:hover .mode-arrow,
+#mpChoiceScreen .mode-option:hover .mode-arrow {
+    transform: translateX(-4px);
+}
+
+/* staggered entrance, same rise as the home screen blocks */
+#gameModeScreen.active .modal-content h2,
+#mpChoiceScreen.active .modal-content h2,
+#gameModeScreen.active .mode-option,
+#mpChoiceScreen.active .mode-option,
+#gameModeScreen.active .close-modal-btn,
+#mpChoiceScreen.active .close-modal-btn {
+    animation: homeRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+#gameModeScreen.active .mode-option:nth-of-type(1),
+#mpChoiceScreen.active .mode-option:nth-of-type(1) { animation-delay: 0.06s; }
+#gameModeScreen.active .mode-option:nth-of-type(2),
+#mpChoiceScreen.active .mode-option:nth-of-type(2) { animation-delay: 0.12s; }
+#gameModeScreen.active .mode-option:nth-of-type(3) { animation-delay: 0.18s; }
+#gameModeScreen.active .mode-option:nth-of-type(4) { animation-delay: 0.24s; }
+#gameModeScreen.active .close-modal-btn { animation-delay: 0.30s; }
+#mpChoiceScreen.active .close-modal-btn { animation-delay: 0.18s; }
+
+/* the h2 shimmer must not double-animate with the rise - rise wins on entry,
+   shimmer resumes because 'animation' shorthand above only lists homeRise
+   while it runs; re-assert both so they compose */
+#gameModeScreen.active .modal-content h2,
+#mpChoiceScreen.active .modal-content h2 {
+    animation: homeRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards,
+               titleShimmer 6s ease-in-out infinite;
+}
+
+/* motion accessibility - same policy as the home screen */
+@media (prefers-reduced-motion: reduce) {
+    #gameModeScreen::before,
+    #gameModeScreen::after,
+    #mpChoiceScreen::before,
+    #mpChoiceScreen::after,
+    #gameModeScreen .modal-content h2,
+    #mpChoiceScreen .modal-content h2,
+    #gameModeScreen.active .modal-content h2,
+    #mpChoiceScreen.active .modal-content h2,
+    #gameModeScreen.active .mode-option,
+    #mpChoiceScreen.active .mode-option,
+    #gameModeScreen.active .close-modal-btn,
+    #mpChoiceScreen.active .close-modal-btn {
+        animation: none;
+    }
+
+    #gameModeScreen .mode-option::after,
+    #mpChoiceScreen .mode-option::after {
+        display: none;
+    }
+
+    #gameModeScreen .mode-option:hover .mode-arrow,
+    #mpChoiceScreen .mode-option:hover .mode-arrow {
+        transform: none;
+    }
+}
