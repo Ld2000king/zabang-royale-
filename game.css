@@ -18,24 +18,24 @@
 #homeScreen::after {
     content: '';
     position: absolute;
-    width: 420px;
-    height: 420px;
+    width: 460px;
+    height: 460px;
     border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.55;
+    filter: blur(65px);
+    opacity: 0.9;
     pointer-events: none;
     z-index: 0;
 }
 
 #homeScreen::before {
-    background: radial-gradient(circle, rgba(78, 127, 214, 0.35), transparent 65%);
+    background: radial-gradient(circle, rgba(96, 150, 255, 0.6), rgba(96, 150, 255, 0.12) 55%, transparent 70%);
     top: -120px;
     right: -100px;
     animation: auroraDrift 14s ease-in-out infinite alternate;
 }
 
 #homeScreen::after {
-    background: radial-gradient(circle, rgba(156, 67, 148, 0.28), transparent 65%);
+    background: radial-gradient(circle, rgba(206, 88, 196, 0.55), rgba(206, 88, 196, 0.12) 55%, transparent 70%);
     bottom: -140px;
     left: -120px;
     animation: auroraDrift 18s ease-in-out infinite alternate-reverse;
@@ -1993,18 +1993,18 @@
 #mpChoiceScreen::after {
     content: '';
     position: absolute;
-    width: 420px;
-    height: 420px;
+    width: 460px;
+    height: 460px;
     border-radius: 50%;
-    filter: blur(70px);
-    opacity: 0.5;
+    filter: blur(65px);
+    opacity: 0.85;
     pointer-events: none;
     z-index: 0;
 }
 
 #gameModeScreen::before,
 #mpChoiceScreen::before {
-    background: radial-gradient(circle, rgba(78, 127, 214, 0.32), transparent 65%);
+    background: radial-gradient(circle, rgba(96, 150, 255, 0.55), rgba(96, 150, 255, 0.1) 55%, transparent 70%);
     top: -120px;
     right: -100px;
     animation: auroraDrift 14s ease-in-out infinite alternate;
@@ -2012,7 +2012,7 @@
 
 #gameModeScreen::after,
 #mpChoiceScreen::after {
-    background: radial-gradient(circle, rgba(156, 67, 148, 0.26), transparent 65%);
+    background: radial-gradient(circle, rgba(206, 88, 196, 0.5), rgba(206, 88, 196, 0.1) 55%, transparent 70%);
     bottom: -140px;
     left: -120px;
     animation: auroraDrift 18s ease-in-out infinite alternate-reverse;

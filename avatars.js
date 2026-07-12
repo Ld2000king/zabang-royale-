@@ -1,7 +1,13 @@
 // ===== Avatar characters (SVG) =====
 // Each avatar is a self-contained SVG string - no external images needed
 
+// Unique gradient id per rendered face. Multiple avatars share the document
+// (e.g. the profile picker grid), and duplicate <defs> ids would all resolve
+// to the first one in document order - so every face needs its own suffix.
+let _faceUid = 0;
+
 function faceSvg({ bg, skin, hair, hairStyle, extra = '' }) {
+    const uid = 'f' + (_faceUid++);
     let hairShape = '';
     if (hairStyle === 'short') {
         hairShape = `<path d="M25 42 Q30 18 50 18 Q70 18 75 42 L75 36 Q70 12 50 12 Q30 12 25 36 Z" fill="${hair}"/>
@@ -21,17 +27,49 @@ function faceSvg({ bg, skin, hair, hairStyle, extra = '' }) {
         hairShape = '';
     }
 
+    const shoulderColor = hair === 'none' ? '#555' : hair;
+
+    // Modern flat-illustration face: a soft top-lit background (radial sheen),
+    // subtly shaded skin, glossy almond eyes with a catch-light, a clean smile,
+    // and a hairline inner rim for a polished "app icon" finish.
     return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="${uid}bg" cx="50%" cy="30%" r="80%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+                <stop offset="55%" stop-color="${bg}" stop-opacity="0"/>
+                <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+            </radialGradient>
+            <linearGradient id="${uid}sh" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${shoulderColor}"/>
+                <stop offset="100%" stop-color="${shoulderColor}" stop-opacity="0.75"/>
+            </linearGradient>
+        </defs>
+
         <circle cx="50" cy="50" r="48" fill="${bg}"/>
-        <circle cx="50" cy="46" r="26" fill="${skin}"/>
-        <circle cx="41" cy="43" r="3.2" fill="#222"/>
-        <circle cx="59" cy="43" r="3.2" fill="#222"/>
-        <circle cx="42.2" cy="42" r="1" fill="#fff"/>
-        <circle cx="60.2" cy="42" r="1" fill="#fff"/>
-        <path d="M42 55 Q50 62 58 55" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="48" fill="url(#${uid}bg)"/>
+
+        <!-- shoulders / bust -->
+        <path d="M16 100 Q16 73 50 73 Q84 73 84 100 Z" fill="url(#${uid}sh)"/>
+
+        <!-- head -->
+        <circle cx="50" cy="45" r="25" fill="${skin}"/>
+        <!-- soft jaw shading for depth -->
+        <ellipse cx="50" cy="60" rx="19" ry="10" fill="#000000" opacity="0.06"/>
+
+        <!-- glossy almond eyes -->
+        <ellipse cx="41" cy="44" rx="2.9" ry="4" fill="#2b2b38"/>
+        <ellipse cx="59" cy="44" rx="2.9" ry="4" fill="#2b2b38"/>
+        <circle cx="42.2" cy="42.4" r="1.15" fill="#fff"/>
+        <circle cx="60.2" cy="42.4" r="1.15" fill="#fff"/>
+
+        <!-- clean smile -->
+        <path d="M42.5 54 Q50 60.5 57.5 54" stroke="#2b2b38" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+
         ${hairShape}
         ${extra}
-        <path d="M20 100 Q20 76 50 76 Q80 76 80 100 Z" fill="${hair === 'none' ? '#555' : hair}" opacity="0.9"/>
+
+        <!-- polished inner rim -->
+        <circle cx="50" cy="50" r="46.5" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1.6"/>
     </svg>`;
 }
 
