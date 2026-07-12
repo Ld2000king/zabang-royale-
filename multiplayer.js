@@ -63,7 +63,12 @@ function generateRoomCode() {
 }
 
 function myPlayerNode() {
-    return { name: gameState.playerName, avatarId: gameState.avatarId, score: 0, eliminated: false, connected: true, freezeUntil: 0 };
+    // uid binds this room slot to the authenticated Firebase user so Security
+    // Rules can enforce that only THIS player edits their own score/data. It
+    // must equal auth.uid (Rules reject any other value). Callers (createRoom /
+    // joinRoom) always waitForAuth() first, so auth.currentUser is set here.
+    const uid = (typeof auth !== 'undefined' && auth && auth.currentUser) ? auth.currentUser.uid : null;
+    return { uid: uid, name: gameState.playerName, avatarId: gameState.avatarId, score: 0, eliminated: false, connected: true, freezeUntil: 0 };
 }
 
 // ---- navigation entry points ----------------------------------------------
