@@ -447,6 +447,16 @@ function showAccessibilityStatement() {
     showScreen('accessibilityScreen');
 }
 
+function openMenu() {
+    const el = document.getElementById('menuOverlay');
+    if (el) el.style.display = 'flex';
+}
+
+function closeMenu() {
+    const el = document.getElementById('menuOverlay');
+    if (el) el.style.display = 'none';
+}
+
 function goToShop() {
     renderShop();
     showScreen('shopScreen');

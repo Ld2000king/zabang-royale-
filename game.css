@@ -1878,37 +1878,117 @@
 }
 
 /* ===== Accessibility statement footer link ===== */
-.legal-links {
+/* Hamburger menu button - home screen top-RIGHT corner (mirror of the
+   help button's top-left frame-relative formula). */
+.menu-btn {
     position: fixed;
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    z-index: 50;
-    max-width: calc(100vw - 24px);
+    top: calc(16px + env(safe-area-inset-top));
+    right: calc(16px + env(safe-area-inset-right) + max(0px, (100vw - var(--app-max-width)) / 2));
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.accessibility-link {
-    background: rgba(10, 14, 23, 0.85);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 14px;
-    font-weight: 600;
+.menu-btn svg { width: 22px; height: 22px; }
+.menu-btn:hover { background: rgba(255, 255, 255, 0.2); box-shadow: var(--glow-cyan); }
+.menu-btn:active { transform: scale(0.9); }
+
+/* Menu bubble overlay - dim backdrop + centered card, ~2/3 screen height */
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.2s ease;
+}
+
+.menu-bubble {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    height: 66vh;
+    max-height: 560px;
+    background: var(--panel-light);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-depth-lg);
+    padding: 28px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: homeRise 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-close {
+    position: absolute;
+    top: 12px;
+    /* logical inline-start = right in this RTL layout, so X sits top-right */
+    inset-inline-start: 14px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-dark);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.menu-close:hover { background: var(--grad-red); color: #fff; }
+.menu-close:active { transform: scale(0.9); }
+
+.menu-title {
+    font-family: var(--font-display);
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 6px 0 24px;
+}
+
+.menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.menu-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: var(--surface-2);
+    color: var(--text-dark);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-btn);
+    padding: 16px;
+    font-family: var(--font-body);
+    font-size: 1.05em;
+    font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    backdrop-filter: blur(4px);
-    white-space: nowrap;
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.accessibility-link:hover {
-    background: rgba(10, 14, 23, 1);
-    box-shadow: var(--glow-cyan);
+.menu-link:hover {
+    background: var(--surface-3);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-sm);
 }
+
+.menu-link:active { transform: scale(0.97); }
 
 .accessibility-statement h3 {
     color: var(--neon-cyan-deep);
