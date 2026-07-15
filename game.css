@@ -1878,22 +1878,31 @@
 }
 
 /* ===== Accessibility statement footer link ===== */
-.accessibility-link {
+.legal-links {
     position: fixed;
     bottom: calc(12px + env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    z-index: 50;
+    max-width: calc(100vw - 24px);
+}
+
+.accessibility-link {
     background: rgba(10, 14, 23, 0.85);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 16px;
+    padding: 6px 16px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    z-index: 50;
     text-decoration: none;
     backdrop-filter: blur(4px);
+    white-space: nowrap;
 }
 
 .accessibility-link:hover {

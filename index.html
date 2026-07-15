@@ -416,7 +416,11 @@
     <!-- כפתור צף להשתקה/הפעלת מוזיקה, מוצג בכל מסך -->
     <button id="musicToggleBtn" class="music-toggle-btn" onclick="toggleMusic()" aria-label="השתקת מוזיקה" title="מוזיקה"></button>
 
-    <button class="accessibility-link" onclick="showAccessibilityStatement()">נגישות / Accessibility</button>
+    <div class="legal-links">
+        <button class="accessibility-link" onclick="showAccessibilityStatement()">נגישות / Accessibility</button>
+        <a class="accessibility-link" href="privacy.html" target="_blank" rel="noopener">פרטיות / Privacy</a>
+        <a class="accessibility-link" href="terms.html" target="_blank" rel="noopener">תנאים / Terms</a>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
