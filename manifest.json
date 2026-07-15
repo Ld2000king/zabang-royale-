@@ -1,7 +1,9 @@
 {
+  "id": "com.zabang.royale",
   "name": "זבאנג רויאל",
   "short_name": "זבאנג",
-  "description": "משחק מילים בעברית - מצא כמה שיותר מילים ב-60 שניות!",
+  "description": "משחק מילים בעברית - מצא כמה שיותר מילים ב-60 שניות! שחקו לבד, נגד בוטים, או במולטיפלייר בזמן אמת נגד חברים.",
+  "categories": ["games", "word", "entertainment"],
   "dir": "rtl",
   "lang": "he",
   "start_url": "./index.html",
@@ -10,6 +12,7 @@
   "orientation": "portrait",
   "theme_color": "#0f1419",
   "background_color": "#0f1419",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
