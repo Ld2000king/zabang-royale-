@@ -433,11 +433,18 @@
     <script src="multiplayer.js"></script>
     <script src="admin.js"></script>
     <script>
-        // Register service worker for offline play & installability
-        // (skipped on file:// - works when served over http/https)
-        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-            navigator.serviceWorker.register('sw.js').catch(() => {});
-        }
+        // Register service worker for offline play & installability, but NOT
+        // inside the Capacitor native shell: there the webview already bundles
+        // assets locally, and a SW intercepting capacitor://localhost can cause
+        // blank-screen errors. Also skipped on file://.
+        (function registerSW() {
+            const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform
+                && window.Capacitor.isNativePlatform());
+            if (isNative) return;
+            if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            }
+        })();
     </script>
 </body>
 </html>
