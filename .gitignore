@@ -3,3 +3,6 @@
 Thumbs.db
 node_modules/
 .claude/
+
+# Capacitor: generated web bundle (rebuilt by `npm run build:web`)
+www/

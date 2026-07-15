@@ -1,0 +1,22 @@
+{
+  "name": "zabang-royale",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zabang Royale - Hebrew word game (PWA + Capacitor native shell)",
+  "scripts": {
+    "build:web": "node scripts/copy-web.mjs",
+    "sync": "npm run build:web && cap sync",
+    "add:ios": "npm run build:web && cap add ios",
+    "add:android": "npm run build:web && cap add android",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
