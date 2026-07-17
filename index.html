@@ -65,7 +65,7 @@
                         <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7 Z"/></svg></span> פרופיל
                     </button>
                     <button class="mega-btn purple-btn" onclick="showLeaderboard()">
-                        <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> טבלת דירוג
+                        <span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> זבאנג רויאל
                     </button>
                 </div>
 
@@ -107,7 +107,7 @@
                     <div class="mode-arrow">›</div>
                 </div>
 
-                <div class="mode-option" onclick="startBattleRoyale()">
+                <div class="mode-option" onclick="showBattleDifficulty()">
                     <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 L18 6"/><path d="M7.8 11.8 L12.2 16.2"/><circle cx="6" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg></div>
                     <div class="mode-details">
                         <h3>באטל רויאל</h3>
@@ -135,6 +135,42 @@
                 </div>
 
                 <button class="close-modal-btn" onclick="goHome()">חזור</button>
+            </div>
+        </div>
+
+        <!-- Battle Royale: difficulty selection -->
+        <div id="battleDifficultyScreen" class="screen">
+            <div class="modal-content">
+                <h2>בחר רמת קושי</h2>
+
+                <div class="mode-option" onclick="startBattleRoyale('easy')">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12 L11 14 L15 10"/></svg></div>
+                    <div class="mode-details">
+                        <h3>זבאנג התחלתי</h3>
+                        <p>בוטים רגועים - מושלם להתחלה</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <div class="mode-option" onclick="startBattleRoyale('medium')">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 L18 6"/><path d="M7.8 11.8 L12.2 16.2"/><circle cx="6" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg></div>
+                    <div class="mode-details">
+                        <h3>זבאנג קלאסי</h3>
+                        <p>אתגר מאוזן נגד בוטים ממוצעים</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <div class="mode-option" onclick="startBattleRoyale('hard')">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 H17 V9 a5 5 0 0 1 -10 0 Z"/><path d="M7 5 H3 v2 a4 4 0 0 0 4 4"/><path d="M17 5 H21 v2 a4 4 0 0 1 -4 4"/><path d="M12 14 V18"/><path d="M8 21 H16"/><path d="M9 18 H15 L16 21 H8 Z"/></svg></div>
+                    <div class="mode-details">
+                        <h3>זבאנג מלכותי</h3>
+                        <p>בוטים אכזריים - רק לאלופים</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <button class="close-modal-btn" onclick="showGameModeSelection()">חזור</button>
             </div>
         </div>
 
@@ -266,8 +302,10 @@
                     <span class="coin-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="#ffd60a" stroke="#ffb700" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#ffb700" stroke-width="1.5"/></svg></span>
                     <span id="srCoins">+0 מטבעות</span>
                 </div>
+                <p class="sr-best-note" id="srLeaderboardNote" style="display:none;"></p>
+                <button class="btn-large gold-btn" id="srLeaderboardBtn" style="display:none;" onclick="submitScoreToLeaderboard()">🏆 הוסף שיא לזבאנג רויאל</button>
                 <button class="btn-large blue-btn" onclick="startSinglePlayer()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 a8 8 0 1 1 2.6 5.9"/><path d="M4 18 V13 H9"/></svg></span> שחק שוב</button>
-                <button class="btn-large green-btn" onclick="showLeaderboard()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> טבלת דירוג</button>
+                <button class="btn-large green-btn" onclick="showLeaderboard()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> זבאנג רויאל</button>
                 <button class="btn-large purple-btn" onclick="goHome()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></span> מסך הבית</button>
             </div>
         </div>
@@ -350,8 +388,8 @@
         <div id="leaderboardScreen" class="screen">
             <div class="profile-container">
                 <button class="exit-btn icon" onclick="goHome()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></button>
-                <h2><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> טבלת דירוג</h2>
-                <p class="mp-hint">הניקוד הגבוה ביותר במשחק יחיד</p>
+                <h2><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> זבאנג רויאל</h2>
+                <p class="mp-hint">טבלת השיאים - הניקוד הגבוה ביותר במשחק יחיד</p>
                 <div class="leaderboard-list" id="leaderboardList"></div>
             </div>
         </div>

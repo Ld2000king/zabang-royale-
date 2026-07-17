@@ -229,8 +229,26 @@ let battleState = {
     playerScore: 0,
     botsFrozenSeconds: 0,
     totalCoinsEarned: 0,
-    botTimer: null   // handle for the bots' scoring interval (see startBotAI/stopBotAI)
+    botTimer: null,  // handle for the bots' scoring interval (see startBotAI/stopBotAI)
+    difficulty: 'medium'
 };
+
+// Bot difficulty tiers (chosen before a Battle Royale). `chance` is the per-tick
+// probability each bot scores; `weights` bias which point value it lands
+// ([100, 250, 500]). Higher tiers score more often and bigger.
+const BOT_DIFFICULTY = {
+    easy:   { name: 'זבאנג התחלתי', chance: 0.35, weights: [0.70, 0.25, 0.05] },
+    medium: { name: 'זבאנג קלאסי',  chance: 0.50, weights: [0.50, 0.35, 0.15] },
+    hard:   { name: 'זבאנג מלכותי', chance: 0.72, weights: [0.30, 0.40, 0.30] }
+};
+
+// Weighted pick of a point value using a difficulty tier's weights.
+function botPoints(weights) {
+    const r = Math.random();
+    if (r < weights[0]) return 100;
+    if (r < weights[0] + weights[1]) return 250;
+    return 500;
+}
 
 // Initialize
 window.addEventListener('load', () => {
@@ -609,11 +627,11 @@ function endDrag() {
     const word = normalizeFinals(dragPath.map(i => currentGame.board[i]).join(''));
 
     if (word.length < 3) {
-        showMessage('קצר מדי!', 'error');
+        showBoardMessage('קצר מדי!', 'error', 800);
     } else if (HEBREW_DICTIONARY[word] === undefined) {
         showWordSubmitToast(word);
     } else if (currentGame.foundWords.has(word)) {
-        showMessage('כבר מצאת את המילה!', 'warning');
+        showBoardMessage('כבר מצאת!', 'warning', 850);
     } else {
         const points = HEBREW_DICTIONARY[word];
         currentGame.foundWords.add(word);
@@ -632,7 +650,7 @@ function endDrag() {
         }
 
         updateFoundWords();
-        showMessage(`כל הכבוד! +${points}`, 'success');
+        showZabangCheer(points); // themed "זבאנג!" cheer above the board
         launchSparkles();
         autoShuffleIfExhausted();
     }
@@ -652,7 +670,7 @@ function autoShuffleIfExhausted() {
     if (findWordOnBoard().length === 0) {
         currentGame.board = currentGame.board.sort(() => Math.random() - 0.5);
         renderBoard(activeBoardId());
-        showMessage('נגמרו המילים — הלוח עורבב אוטומטית!', 'info');
+        showBoardMessage('נגמרו המילים — הלוח עורבב!', 'info', 1100);
     }
 }
 
@@ -680,6 +698,55 @@ function showMessage(msg, type = 'info') {
     msgEl.textContent = msg;
     document.body.appendChild(msgEl);
     setTimeout(() => msgEl.remove(), 2000);
+}
+
+// ---- Above-the-board messages ----------------------------------------------
+// In-game feedback shows just ABOVE the active board (never over it) and for a
+// short time, so the player can keep hunting words without the toast covering
+// the letters. Position is measured live from the board so it stays correct
+// across screen sizes and both boards (single #board / battle #battleBoard).
+function positionAboveBoard(el) {
+    const boardEl = document.getElementById(activeBoardId());
+    if (!boardEl) { // fallback: near the top
+        el.style.left = '50%';
+        el.style.top = '14%';
+        el.style.transform = 'translate(-50%, 0)';
+        return;
+    }
+    const r = boardEl.getBoundingClientRect();
+    el.style.left = (r.left + r.width / 2) + 'px';
+    el.style.top = (r.top - 8) + 'px';
+    el.style.transform = 'translate(-50%, -100%)'; // sit just above the board
+}
+
+function showBoardMessage(msg, type = 'info', duration = 1000) {
+    const el = document.createElement('div');
+    el.className = `board-msg ${type}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    positionAboveBoard(el);
+    setTimeout(() => el.classList.add('leaving'), Math.max(0, duration - 220));
+    setTimeout(() => el.remove(), duration);
+}
+
+// Themed "זבאנג!" celebration on every found word, tiered by the word's value
+// so bigger finds get a bigger cheer. Shown above the board like other in-game
+// feedback.
+const ZABANG_CHEERS = {
+    big:   ['זבאנג של מלך!', 'זבאנג מלכותי!', 'איזה זבאנג ענק!', 'זבאנג אגדי!', 'זבאנג על!'],
+    mid:   ['איזה זבאנג!', 'זבאנג חזק!', 'זבאנג מטורף!', 'בום זבאנג!', 'זבאנג יפה!'],
+    small: ['זבאנג!', 'זבאנג נחמד!', 'זבאנג קטן!', 'טוב, זבאנג!']
+};
+
+function zabangCheerPhrase(points) {
+    const pool = points >= 500 ? ZABANG_CHEERS.big
+        : points >= 250 ? ZABANG_CHEERS.mid
+        : ZABANG_CHEERS.small;
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function showZabangCheer(points) {
+    showBoardMessage(`${zabangCheerPhrase(points)} +${points}`, 'cheer', 1100);
 }
 
 const CELEBRATION_COLORS = ['#00e5ff', '#39ff6a', '#ffd60a', '#ff2ec4', '#8b5cf6', '#ff3b5c'];
@@ -735,7 +802,8 @@ function showWordSubmitToast(word) {
         msgEl.remove();
     });
     document.body.appendChild(msgEl);
-    setTimeout(() => msgEl.remove(), 1500);
+    positionAboveBoard(msgEl); // above the board, not over it
+    setTimeout(() => msgEl.remove(), 1800); // a bit longer: it's clickable
 }
 
 function submitWordForReview(word) {
@@ -759,7 +827,7 @@ function submitWordForReview(word) {
         });
     }
 
-    showMessage('תודה! המילה נשלחה לבדיקה', 'success');
+    showBoardMessage('נשלח לבדיקה — תודה!', 'success', 1100);
 }
 
 function pointsForWord(word) {
@@ -862,7 +930,12 @@ function endRound(mode) {
         gameState.coins += Math.floor(currentGame.score / 10);
         gameState.totalScore += currentGame.score;
         gameState.gamesPlayed++;
-        maybeSubmitLeaderboardScore(); // updates bestSingleScore + writes to Firebase on a new best
+        // A new personal best unlocks the OPT-IN "add to זבאנג רויאל" button on
+        // the result screen - we no longer auto-submit. Only the best score can
+        // ever be submitted, and only if the player chooses to.
+        const prevBest = gameState.bestSingleScore || 0;
+        currentGame.isNewBest = currentGame.score > prevBest && currentGame.score > 0;
+        if (currentGame.isNewBest) gameState.bestSingleScore = currentGame.score;
         saveGameState();
         showGameOverDialog();
     } else {
@@ -874,18 +947,38 @@ function showGameOverDialog() {
     document.getElementById('srScore').textContent = currentGame.score;
     document.getElementById('srWords').textContent = currentGame.foundWords.size;
     document.getElementById('srCoins').textContent = `+${Math.floor(currentGame.score / 10)} מטבעות`;
+
+    // Opt-in leaderboard button: only offered on a new personal best (only the
+    // best score is submittable) and only when Firebase is available.
+    const lbBtn = document.getElementById('srLeaderboardBtn');
+    const lbNote = document.getElementById('srLeaderboardNote');
+    const canSubmit = currentGame.isNewBest && typeof FIREBASE_READY !== 'undefined'
+        && FIREBASE_READY && db && gameState.playerId;
+    if (lbBtn && lbNote) {
+        if (canSubmit) {
+            lbBtn.style.display = '';
+            lbBtn.disabled = false;
+            lbBtn.innerHTML = '🏆 הוסף שיא לזבאנג רויאל';
+            lbNote.style.display = 'block';
+            lbNote.textContent = `שיא חדש! ${currentGame.score} נקודות`;
+        } else {
+            lbBtn.style.display = 'none';
+            lbNote.style.display = 'none';
+        }
+    }
+
     updateHomeUI();
     showScreen('singleResultScreen');
 }
 
-// ===== Leaderboard (best single-player score, global via Firebase) =====
-// Each device keeps one row keyed by gameState.playerId; we only write when
-// the player sets a new personal best, so scores can only ever go up.
-// NOTE: like all scores in this client-authoritative game, this is
-// spoofable - fine for a casual leaderboard, not a competitive-stakes one.
-function maybeSubmitLeaderboardScore() {
-    if (currentGame.score <= 0 || currentGame.score <= (gameState.bestSingleScore || 0)) return;
-    gameState.bestSingleScore = currentGame.score; // caller (endRound) persists gameState
+// ===== זבאנג רויאל leaderboard (best single-player score, global via Firebase) =====
+// Each device keeps one row keyed by gameState.playerId. Submission is OPT-IN:
+// only offered on a new personal best, and only when the player taps the button
+// on the result screen (see showGameOverDialog). So scores can only go up and
+// nothing is published without the player choosing to.
+// NOTE: like all scores in this client-authoritative game, this is spoofable -
+// fine for a casual leaderboard, not a competitive-stakes one.
+function submitScoreToLeaderboard() {
     if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY || !db || !gameState.playerId) return;
     const entry = {
         name: gameState.playerName,
@@ -893,9 +986,16 @@ function maybeSubmitLeaderboardScore() {
         avatarId: gameState.avatarId,
         updatedAt: firebase.database.ServerValue.TIMESTAMP
     };
+    const btn = document.getElementById('srLeaderboardBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '✓ נוסף לזבאנג רויאל'; }
     if (typeof authReady !== 'undefined') {
         authReady.then(() => db.ref('leaderboard/' + gameState.playerId).set(entry)
-            .catch(err => console.warn('Leaderboard write failed (add a leaderboard Security Rule):', err.message)));
+            .then(() => showMessage('נוסף לזבאנג רויאל!', 'success'))
+            .catch(err => {
+                console.warn('Leaderboard write failed:', err.message);
+                showMessage('השמירה נכשלה, נסה שוב', 'error');
+                if (btn) { btn.disabled = false; btn.innerHTML = '🏆 הוסף שיא לזבאנג רויאל'; }
+            }));
     }
 }
 
@@ -1104,7 +1204,13 @@ function useBattleHint() {
 }
 
 // Battle Royale
-function startBattleRoyale() {
+// Show the difficulty picker before a bots battle (called from the mode menu).
+function showBattleDifficulty() {
+    showScreen('battleDifficultyScreen');
+}
+
+function startBattleRoyale(difficulty = 'medium') {
+    battleState.difficulty = BOT_DIFFICULTY[difficulty] ? difficulty : 'medium';
     currentGame.mode = 'battle';
     battleState.currentRound = 1;
     battleState.totalCoinsEarned = 0;
@@ -1133,7 +1239,8 @@ function startBattleRound() {
     battleState.players.forEach(b => { if (!b.eliminated) b.score = 0; });
 
     showScreen('battleScreen');
-    document.getElementById('roundBadge').textContent = `סיבוב ${battleState.currentRound}/5`;
+    const diffName = (BOT_DIFFICULTY[battleState.difficulty] || BOT_DIFFICULTY.medium).name;
+    document.getElementById('roundBadge').textContent = `סיבוב ${battleState.currentRound}/5 · ${diffName}`;
     // ensure the "shuffle opponents" power-up + pause button are visible in
     // bots mode (multiplayer mode hides both since they don't apply to real players)
     const shuffleBtn = document.getElementById('battleShuffleBtn');
@@ -1183,9 +1290,10 @@ function startBotAI() {
             return;
         }
 
+        const tier = BOT_DIFFICULTY[battleState.difficulty] || BOT_DIFFICULTY.medium;
         for (let bot of battleState.players) {
-            if (!bot.eliminated && Math.random() > 0.5) {
-                bot.score += Math.random() > 0.6 ? 100 : (Math.random() > 0.4 ? 250 : 500);
+            if (!bot.eliminated && Math.random() < tier.chance) {
+                bot.score += botPoints(tier.weights);
             }
         }
 
