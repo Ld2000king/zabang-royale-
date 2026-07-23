@@ -440,10 +440,26 @@ function renderDailyReward() {
     }
 }
 
-// Called once on home load: pop the reward automatically if it's waiting.
+// Auto-pop the reward when it's waiting, but at most once per calendar day per
+// session, so reopening/resuming the app (or dismissing without claiming)
+// doesn't nag repeatedly. A genuinely new day re-arms it. The gift FAB always
+// lets the player reopen it manually.
+let dailyPromptedFor = null;
 function maybeShowDailyReward() {
-    if (dailyRewardAvailable()) showDailyReward();
+    if (!dailyRewardAvailable()) return;
+    if (dailyPromptedFor === dateKey()) return;
+    dailyPromptedFor = dateKey();
+    showDailyReward();
 }
+
+// PWAs / installed apps usually RESUME from background instead of doing a full
+// page load, so `window load` never re-fires on the next day's "login". Also
+// check whenever the app becomes visible again - this is what makes the daily
+// bonus actually appear when you reopen the game each day.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') maybeShowDailyReward();
+});
+window.addEventListener('focus', maybeShowDailyReward);
 
 // ===== Background music =====
 // A single continuous loop for the whole app - no per-screen switching, since
