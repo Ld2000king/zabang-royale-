@@ -873,16 +873,27 @@ function loadCustomWords() {
 }
 
 // Single Player
-function startSinglePlayer() {
+// Single-player durations: quick = 1 min, precise = 2 min.
+const SINGLE_DURATIONS = { quick: 60, precise: 120 };
+
+// Show the single-player duration picker (called from the mode menu).
+function showSingleModeChoice() {
+    showScreen('singleModeScreen');
+}
+
+function startSinglePlayer(singleMode = 'quick') {
+    const duration = SINGLE_DURATIONS[singleMode] || SINGLE_DURATIONS.quick;
     currentGame.mode = 'single';
+    currentGame.singleMode = singleMode; // remembered so "play again" replays the same length
     currentGame.board = generateBoard();
     currentGame.foundWords.clear();
     currentGame.score = 0;
-    currentGame.timeLeft = 60;
+    currentGame.timeLeft = duration;
     currentGame.freezeLeft = 0;
     currentGame.gameActive = true;
 
     showScreen('gameScreen');
+    document.getElementById('timerDisplay').textContent = currentGame.timeLeft; // avoid a 1s stale "60"
     renderBoard('board');
     applyBoardTheme('board', preferredThemeIndex());
     updateFoundWords();

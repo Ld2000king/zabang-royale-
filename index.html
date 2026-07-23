@@ -98,11 +98,11 @@
             <div class="modal-content">
                 <h2>בחר מצב משחק</h2>
 
-                <div class="mode-option" onclick="startSinglePlayer()">
+                <div class="mode-option" onclick="showSingleModeChoice()">
                     <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21 c0 -4.5 3.5 -7 8 -7 s8 2.5 8 7 Z"/></svg></div>
                     <div class="mode-details">
                         <h3>משחקן יחיד</h3>
-                        <p>משחק אישי נגד הזמן - 60 שניות</p>
+                        <p>משחק אישי נגד הזמן</p>
                     </div>
                     <div class="mode-arrow">›</div>
                 </div>
@@ -135,6 +135,33 @@
                 </div>
 
                 <button class="close-modal-btn" onclick="goHome()">חזור</button>
+            </div>
+        </div>
+
+        <!-- Single player: duration selection -->
+        <div id="singleModeScreen" class="screen">
+            <div class="modal-content">
+                <h2>בחר סוג משחק</h2>
+
+                <div class="mode-option" onclick="startSinglePlayer('quick')">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 L4 14 H11 L10 22 L20 9 H13 Z"/></svg></div>
+                    <div class="mode-details">
+                        <h3>משחק מהיר</h3>
+                        <p>דקה אחת - מירוץ מהיר נגד השעון</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <div class="mode-option" onclick="startSinglePlayer('precise')">
+                    <div class="mode-icon icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9 V13 L15 15"/><path d="M9 2 H15"/></svg></div>
+                    <div class="mode-details">
+                        <h3>משחק מדוייק</h3>
+                        <p>שתי דקות - זמן לחשוב ולמצוא יותר מילים</p>
+                    </div>
+                    <div class="mode-arrow">›</div>
+                </div>
+
+                <button class="close-modal-btn" onclick="showGameModeSelection()">חזור</button>
             </div>
         </div>
 
@@ -304,7 +331,7 @@
                 </div>
                 <p class="sr-best-note" id="srLeaderboardNote" style="display:none;"></p>
                 <button class="btn-large gold-btn" id="srLeaderboardBtn" style="display:none;" onclick="submitScoreToLeaderboard()">🏆 הוסף שיא לזבאנג רויאל</button>
-                <button class="btn-large blue-btn" onclick="startSinglePlayer()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 a8 8 0 1 1 2.6 5.9"/><path d="M4 18 V13 H9"/></svg></span> שחק שוב</button>
+                <button class="btn-large blue-btn" onclick="startSinglePlayer(currentGame.singleMode || 'quick')"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 a8 8 0 1 1 2.6 5.9"/><path d="M4 18 V13 H9"/></svg></span> שחק שוב</button>
                 <button class="btn-large green-btn" onclick="showLeaderboard()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 V12 H10 V20"/><path d="M14 20 V4 H18 V20"/><path d="M3 20 H21"/></svg></span> זבאנג רויאל</button>
                 <button class="btn-large purple-btn" onclick="goHome()"><span class="icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg></span> מסך הבית</button>
             </div>
