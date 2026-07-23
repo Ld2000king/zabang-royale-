@@ -173,6 +173,7 @@ function applyBoardTheme(boardId, themeIndex) {
 let gameState = {
     playerName: 'שחקן',
     coins: 100,
+    diamonds: 0,         // premium currency (blue diamonds) - buys exclusive avatars
     inventory: { hint: 3, shuffle: 0, freeze: 0, freezeOpponents: 0, tornado: 0 },
     totalScore: 0,
     gamesPlayed: 0,
@@ -185,11 +186,25 @@ let gameState = {
     ownedAvatars: [],
     musicEnabled: true,  // actual playback still gated on a user gesture, see initMusic()
     bestSingleScore: 0,  // personal best single-player score (shown on the leaderboard)
-    playerId: null       // stable per-device id for the global leaderboard entry
+    playerId: null,      // stable per-device id for the global leaderboard entry
+    lastDailyClaim: null, // 'YYYY-MM-DD' of the last claimed daily reward
+    dailyStreak: 0        // consecutive-day login streak
 };
 
-// price of a premium ("cooler") profile picture in the shop
-const AVATAR_COST = 3000;
+// price of a premium ("cooler") profile picture - now paid in blue diamonds
+const AVATAR_DIAMOND_COST = 20;
+
+// Daily login reward: a 7-day cycle. The streak grows the coin bonus, and the
+// 7th day pays a big finish + blue diamonds. Miss a day and the streak resets.
+const DAILY_REWARDS = [
+    { coins: 50 },
+    { coins: 100 },
+    { coins: 150 },
+    { coins: 200 },
+    { coins: 250 },
+    { coins: 300 },
+    { coins: 400, diamonds: 15 }
+];
 
 // Coins granted by watching a (mock) rewarded video ad.
 const AD_REWARD_COINS = 50;
@@ -287,6 +302,7 @@ window.addEventListener('load', () => {
     loadCustomWords();
     updateHomeUI();
     initMusic();
+    maybeShowDailyReward(); // pop the daily bonus if it's waiting
 });
 
 // Merge the words.js expansion pack (EXTRA_WORDS) into the dictionary. Words
@@ -312,6 +328,9 @@ function loadGameState() {
     if (!Array.isArray(gameState.ownedAvatars)) gameState.ownedAvatars = [];
     if (typeof gameState.musicEnabled !== 'boolean') gameState.musicEnabled = true;
     if (typeof gameState.bestSingleScore !== 'number') gameState.bestSingleScore = 0;
+    if (typeof gameState.diamonds !== 'number') gameState.diamonds = 0;
+    if (typeof gameState.dailyStreak !== 'number') gameState.dailyStreak = 0;
+    if (typeof gameState.lastDailyClaim === 'undefined') gameState.lastDailyClaim = null;
     // a stable per-device id so a player keeps a single leaderboard entry across
     // sessions (getMyPlayerId() in multiplayer.js is sessionStorage-based and
     // resets each session, so it's unsuitable for a persistent leaderboard row)
@@ -333,6 +352,97 @@ function loadGameState() {
 
 function saveGameState() {
     localStorage.setItem('zabangState', JSON.stringify(gameState));
+}
+
+// ===== Daily login reward =====
+// Local-date keyed (not UTC) so "a new day" matches the player's own midnight.
+function dateKey(d = new Date()) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function dailyRewardAvailable() {
+    return gameState.lastDailyClaim !== dateKey();
+}
+
+// The streak-day that WOULD be claimed today: continues yesterday's streak,
+// otherwise restarts at day 1. (1-based)
+function pendingDailyStreak() {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    if (gameState.lastDailyClaim === dateKey(y)) return (gameState.dailyStreak || 0) + 1;
+    return 1;
+}
+
+// Reward for a given 1-based streak day, cycling every 7 days.
+function dailyRewardFor(streak) {
+    return DAILY_REWARDS[(streak - 1) % DAILY_REWARDS.length];
+}
+
+function claimDailyReward() {
+    if (!dailyRewardAvailable()) return;
+    const streak = pendingDailyStreak();
+    const reward = dailyRewardFor(streak);
+    gameState.coins += reward.coins || 0;
+    gameState.diamonds += reward.diamonds || 0;
+    gameState.dailyStreak = streak;
+    gameState.lastDailyClaim = dateKey();
+    saveGameState();
+    updateHomeUI();
+    renderDailyReward(); // refresh the modal to its "claimed" state
+    let msg = `יום ${((streak - 1) % 7) + 1}! קיבלת ${reward.coins} מטבעות`;
+    if (reward.diamonds) msg += ` ו-${reward.diamonds} יהלומים`;
+    showMessage(msg + '!', 'success');
+    if (reward.diamonds) launchConfetti();
+}
+
+// Opens the daily-reward modal (also auto-opened on home load when available).
+function showDailyReward() {
+    renderDailyReward();
+    const overlay = document.getElementById('dailyRewardOverlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function closeDailyReward() {
+    const overlay = document.getElementById('dailyRewardOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+// Renders the 7-day track + claim button / claimed state into the modal.
+function renderDailyReward() {
+    const track = document.getElementById('dailyTrack');
+    const btn = document.getElementById('dailyClaimBtn');
+    const note = document.getElementById('dailyNote');
+    if (!track || !btn || !note) return;
+
+    const available = dailyRewardAvailable();
+    const pending = pendingDailyStreak();
+    const activeDay = ((pending - 1) % 7) + 1;         // highlighted day (1..7)
+    const claimedDay = ((gameState.dailyStreak - 1) % 7) + 1;
+
+    track.innerHTML = DAILY_REWARDS.map((r, i) => {
+        const day = i + 1;
+        const isToday = available && day === activeDay;
+        const isDone = !available ? day <= claimedDay : day < activeDay;
+        const cls = `daily-day${isToday ? ' today' : ''}${isDone ? ' done' : ''}`;
+        const reward = r.diamonds
+            ? `${icon('diamond', 'daily-ico')}${r.diamonds}`
+            : `${icon('coin', 'daily-ico')}${r.coins}`;
+        return `<div class="${cls}"><span class="daily-num">יום ${day}</span><span class="daily-reward">${reward}</span></div>`;
+    }).join('');
+
+    if (available) {
+        btn.style.display = '';
+        btn.disabled = false;
+        btn.textContent = 'קבל בונוס';
+        note.textContent = `רצף התחברות: ${pending} ימים`;
+    } else {
+        btn.style.display = 'none';
+        note.textContent = 'כבר קיבלת היום — חזור מחר!';
+    }
+}
+
+// Called once on home load: pop the reward automatically if it's waiting.
+function maybeShowDailyReward() {
+    if (dailyRewardAvailable()) showDailyReward();
 }
 
 // ===== Background music =====
@@ -424,6 +534,11 @@ function updateHomeUI() {
     document.getElementById('homeTrophies').textContent = trophiesText();
     document.getElementById('levelBadge').textContent = `רמה ${gameState.level}`;
     document.getElementById('shopCoins').textContent = coinsText();
+    const diamondsTxt = isAdminAccount() ? '∞' : gameState.diamonds;
+    const homeDiamondsEl = document.getElementById('homeDiamonds');
+    if (homeDiamondsEl) homeDiamondsEl.textContent = diamondsTxt;
+    const shopDiamondsEl = document.getElementById('shopDiamonds');
+    if (shopDiamondsEl) shopDiamondsEl.textContent = diamondsTxt;
     document.getElementById('homeAvatar').innerHTML = getAvatarById(gameState.avatarId).svg;
     const arena = currentArena();
     const arenaEl = document.getElementById('homeArena');
@@ -1406,14 +1521,18 @@ function endBattleRound() {
         updateHomeUI();
 
         if (battleState.currentRound >= battleState.totalRounds) {
-            // Victory!
+            // Victory! coins + a few blue diamonds as a premium bonus
             gameState.coins += 100;
+            gameState.diamonds += 5;
             battleState.totalCoinsEarned += 100;
             saveGameState();
             document.getElementById('victoryTitle').innerHTML = `${icon('trophy')} ניצחת! ${icon('trophy')}`;
             document.getElementById('victorySubtitle').textContent = `שרדת את כל ${battleState.totalRounds} הסיבובים!`;
             showScreen('victoryScreen');
             document.getElementById('victoryRewards').innerHTML = `
+                <div class="reward-box">
+                    <span class="icon">${ICONS.diamond}</span><span>+5 יהלומים</span>
+                </div>
                 <div class="reward-box">
                     <span class="coin-icon icon">${ICONS.coin}</span>
                     <span>סה"כ: ${battleState.totalCoinsEarned} מטבעות!</span>
@@ -1509,7 +1628,7 @@ function renderShop() {
     // --- Premium ("cooler") profile pictures ---
     const premiumAvatars = AVATARS.filter(a => a.premium);
     if (premiumAvatars.length) {
-        html += `<h3 class="shop-section-title">תמונות פרופיל מגניבות</h3>`;
+        html += `<h3 class="shop-section-title">תמונות פרופיל אקסקלוסיביות ${icon('diamond', 'coin-icon')}</h3>`;
         premiumAvatars.forEach(a => {
             const owned = isAvatarOwned(a.id);
             html += `
@@ -1523,7 +1642,7 @@ function renderShop() {
                     </div>
                     ${owned
                         ? `<span class="shop-owned">${icon('check')} בבעלותך</span>`
-                        : `<button class="buy-btn" onclick="buyAvatar('${a.id}')">${icon('coin', 'coin-icon')} ${AVATAR_COST} קנה</button>`}
+                        : `<button class="buy-btn diamond-buy-btn" onclick="buyAvatar('${a.id}')">${icon('diamond', 'coin-icon')} ${AVATAR_DIAMOND_COST} קנה</button>`}
                 </div>
             `;
         });
@@ -1618,12 +1737,13 @@ function isAvatarOwned(id) {
 function buyAvatar(id) {
     const a = getAvatarById(id);
     if (isAvatarOwned(id)) { showMessage('כבר בבעלותך', 'info'); return; }
-    if (!hasInfiniteCoins() && gameState.coins < AVATAR_COST) {
-        showMessage('אין מספיק מטבעות!', 'error');
+    // Premium avatars are bought with blue diamonds (admin owns everything free)
+    if (!isAdminAccount() && gameState.diamonds < AVATAR_DIAMOND_COST) {
+        showMessage('אין מספיק יהלומים!', 'error');
         return;
     }
-    showConfirm(`האם אתה בטוח? קניית התמונה "${a.name}" ב-${AVATAR_COST} מטבעות`, () => {
-        if (!hasInfiniteCoins()) gameState.coins -= AVATAR_COST;
+    showConfirm(`האם אתה בטוח? קניית התמונה "${a.name}" ב-${AVATAR_DIAMOND_COST} יהלומים`, () => {
+        if (!isAdminAccount()) gameState.diamonds -= AVATAR_DIAMOND_COST;
         if (!gameState.ownedAvatars.includes(id)) gameState.ownedAvatars.push(id);
         saveGameState();
         updateHomeUI();
@@ -1638,7 +1758,9 @@ function renderProfile() {
         <p><strong>שם:</strong> ${escapeHtml(gameState.playerName)} <button class="rename-btn" onclick="renamePlayer()" title="ערוך שם">${icon('pencil')}</button></p>
         <p><strong>רמה:</strong> ${gameState.level}</p>
         <p><strong>מטבעות:</strong> ${coinsText()}</p>
+        <p><strong>יהלומים:</strong> ${isAdminAccount() ? '∞' : gameState.diamonds}</p>
         <p><strong>גביעים:</strong> ${trophiesText()}</p>
+        <p><strong>רצף התחברות:</strong> ${gameState.dailyStreak || 0} ימים</p>
         <p><strong>עיר:</strong> ${currentArena().motif} ${currentArena().name} — ${currentArena().tagline}</p>
         <p><strong>ניקוד כולל:</strong> ${gameState.totalScore}</p>
         <p><strong>שיא משחק יחיד:</strong> ${gameState.bestSingleScore || 0}</p>

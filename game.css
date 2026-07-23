@@ -2327,3 +2327,107 @@
         transform: none;
     }
 }
+
+/* ===========================================================================
+   Diamonds (premium currency) + Daily login reward
+   ========================================================================= */
+
+/* Home stat: blue diamonds next to coins/trophies */
+.diamonds-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1em;
+    font-weight: 800;
+    color: #4aa3ff;
+}
+.diamonds-display .icon svg { width: 1.1em; height: 1.1em; }
+
+/* Shop balance: small gap between the coin and diamond counters */
+.shop-diamonds-sep { display: inline-block; width: 16px; }
+
+/* Diamond-priced buy button (premium avatars) */
+.diamond-buy-btn { background: linear-gradient(160deg, #4aa3ff, #2b7fff); color: #fff; }
+
+/* Daily-reward floating button - bottom-LEFT, mirror of the music FAB */
+.daily-fab {
+    position: fixed;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    left: calc(16px + env(safe-area-inset-left) + max(0px, (100vw - var(--app-max-width)) / 2));
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #FFD24D, #FF8A1E);
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    color: #3A1D00;
+    cursor: pointer;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(255, 138, 30, 0.4);
+    animation: dailyPulse 2.2s ease-in-out infinite;
+}
+.daily-fab svg { width: 24px; height: 24px; }
+.daily-fab:active { transform: scale(0.9); }
+
+@keyframes dailyPulse {
+    0%, 100% { transform: scale(1);    box-shadow: 0 6px 18px rgba(255, 138, 30, 0.4); }
+    50%      { transform: scale(1.07); box-shadow: 0 8px 26px rgba(255, 138, 30, 0.6); }
+}
+
+/* Daily reward modal - reuses .menu-overlay/.menu-bubble; overrides for the
+   7-day track layout */
+.daily-bubble { height: auto; max-height: 84vh; overflow-y: auto; }
+
+.daily-note {
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.daily-track {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.daily-day {
+    background: var(--surface-2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* day 7 = the big finish, spans the full width */
+.daily-day:last-child { grid-column: span 2; }
+
+.daily-day.done { opacity: 0.45; }
+
+.daily-day.today {
+    border-color: var(--neon-gold, #C99A2E);
+    background: linear-gradient(160deg, rgba(255, 210, 77, 0.18), rgba(255, 138, 30, 0.08));
+    box-shadow: 0 0 0 2px rgba(201, 154, 46, 0.45);
+}
+
+.daily-num { font-size: 0.85em; font-weight: 700; color: var(--text-secondary); }
+
+.daily-reward {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+.daily-ico svg { width: 1.15em; height: 1.15em; }
+
+@media (prefers-reduced-motion: reduce) {
+    .daily-fab { animation: none; }
+}

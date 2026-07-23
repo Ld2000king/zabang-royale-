@@ -11,6 +11,8 @@ const ICONS = {
 
     coin: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="#ffd60a" stroke="#ffb700" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#ffb700" stroke-width="1.5"/></svg>`,
 
+    diamond: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="diamondGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ad7ff"/><stop offset="1" stop-color="#2b7fff"/></linearGradient></defs><path d="M6 3 H18 L22 9 L12 22 L2 9 Z" fill="url(#diamondGrad)" stroke="#1a5fd0" stroke-width="1" stroke-linejoin="round"/><path d="M2 9 H22 M8.5 9 L12 22 M15.5 9 L12 22 M6 3 L8.5 9 M18 3 L15.5 9" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="0.8"/></svg>`,
+
     home: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 10 V20 H18 V10"/></svg>`,
 
     hint: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 H15"/><path d="M12 3 a6 6 0 0 1 3.5 10.9 c-0.8 0.6 -1.2 1.4 -1.2 2.1 H9.7 c0 -0.7 -0.4 -1.5 -1.2 -2.1 A6 6 0 0 1 12 3 Z"/></svg>`,
