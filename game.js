@@ -233,21 +233,50 @@ let battleState = {
     difficulty: 'medium'
 };
 
-// Bot difficulty tiers (chosen before a Battle Royale). `chance` is the per-tick
-// probability each bot scores; `weights` bias which point value it lands
-// ([100, 250, 500]). Higher tiers score more often and bigger.
+// Bot difficulty tiers (chosen before a Battle Royale). Each bot "searches"
+// the board and finds a word roughly every minDelay..maxDelay ms - so a bot's
+// score comes from finding real words at a human-like pace, not from arbitrary
+// points every tick. Easy = slow, relaxed searching; hard = fast.
 const BOT_DIFFICULTY = {
-    easy:   { name: 'זבאנג התחלתי', chance: 0.35, weights: [0.70, 0.25, 0.05] },
-    medium: { name: 'זבאנג קלאסי',  chance: 0.50, weights: [0.50, 0.35, 0.15] },
-    hard:   { name: 'זבאנג מלכותי', chance: 0.72, weights: [0.30, 0.40, 0.30] }
+    easy:   { name: 'זבאנג התחלתי', minDelay: 7000, maxDelay: 13000 },
+    medium: { name: 'זבאנג קלאסי',  minDelay: 4000, maxDelay: 7500 },
+    hard:   { name: 'זבאנג מלכותי', minDelay: 2200, maxDelay: 4500 }
 };
 
-// Weighted pick of a point value using a difficulty tier's weights.
-function botPoints(weights) {
-    const r = Math.random();
-    if (r < weights[0]) return 100;
-    if (r < weights[0] + weights[1]) return 250;
-    return 500;
+// Randomized "thinking time" until a bot's next find, within its tier's range.
+function botFindDelay(tier) {
+    return tier.minDelay + Math.random() * (tier.maxDelay - tier.minDelay);
+}
+
+// All valid dictionary words currently placed on the board, with their point
+// value. This is the pool bots draw from when they "find" a word, so their
+// score reflects real board words (right length/value distribution) instead of
+// arbitrary increments. Scans both directions, like findWordOnBoard().
+function collectBoardWords() {
+    const size = currentGame.gridSize;
+    const board = currentGame.board;
+    const words = [];
+    const seen = new Set();
+    for (const word of Object.keys(HEBREW_DICTIONARY)) {
+        if (word.length < 3 || word.length > size || seen.has(word)) continue;
+        let onBoard = false;
+        for (let r = 0; r < size && !onBoard; r++) {
+            for (let c = 0; c <= size - word.length && !onBoard; c++) {
+                let ok = true;
+                for (let i = 0; i < word.length; i++) { if (board[r * size + c + i] !== word[i]) { ok = false; break; } }
+                if (ok) onBoard = true;
+            }
+        }
+        for (let c = 0; c < size && !onBoard; c++) {
+            for (let r = 0; r <= size - word.length && !onBoard; r++) {
+                let ok = true;
+                for (let i = 0; i < word.length; i++) { if (board[(r + i) * size + c] !== word[i]) { ok = false; break; } }
+                if (ok) onBoard = true;
+            }
+        }
+        if (onBoard) { seen.add(word); words.push({ word: word, points: HEBREW_DICTIONARY[word] }); }
+    }
+    return words;
 }
 
 // Initialize
@@ -1253,6 +1282,7 @@ function startBattleRound() {
     if (battleExitBtn) battleExitBtn.style.display = 'none';
     renderBoard('battleBoard');
     applyBoardTheme('battleBoard', preferredThemeIndex());
+    battleState.boardWords = collectBoardWords(); // pool the bots "search" this round
     updateBattleUI();
     startBotAI();
     startTimer('battle');
@@ -1279,26 +1309,41 @@ function updateBattleUI() {
 
 function startBotAI() {
     stopBotAI(); // never stack intervals across rounds
+    const tier = BOT_DIFFICULTY[battleState.difficulty] || BOT_DIFFICULTY.medium;
+
+    // Give each bot its own initial "thinking" countdown, staggered so they
+    // don't all find a word on the same tick (feels like independent players).
+    battleState.players.forEach(bot => {
+        if (!bot.eliminated) bot.nextFindIn = botFindDelay(tier) * (0.4 + Math.random() * 0.6);
+    });
+
+    const TICK = 1000; // 1s resolution keeps the pacing smooth and freeze exact
     battleState.botTimer = setInterval(() => {
         if (!currentGame.gameActive) {
             stopBotAI();
             return;
         }
 
+        // Frozen by a power-up: bots stop searching entirely until it wears off.
         if (battleState.botsFrozenSeconds > 0) {
-            battleState.botsFrozenSeconds = Math.max(0, battleState.botsFrozenSeconds - 2);
+            battleState.botsFrozenSeconds = Math.max(0, battleState.botsFrozenSeconds - 1);
             return;
         }
 
-        const tier = BOT_DIFFICULTY[battleState.difficulty] || BOT_DIFFICULTY.medium;
-        for (let bot of battleState.players) {
-            if (!bot.eliminated && Math.random() < tier.chance) {
-                bot.score += botPoints(tier.weights);
+        const pool = (battleState.boardWords && battleState.boardWords.length) ? battleState.boardWords : null;
+        let changed = false;
+        for (const bot of battleState.players) {
+            if (bot.eliminated) continue;
+            bot.nextFindIn = (bot.nextFindIn || 0) - TICK;
+            if (bot.nextFindIn <= 0) {
+                // the bot "found" a word - award a real board word's value
+                bot.score += pool ? pool[Math.floor(Math.random() * pool.length)].points : 100;
+                bot.nextFindIn = botFindDelay(tier); // schedule the next search
+                changed = true;
             }
         }
-
-        updateBattleUI();
-    }, 2000);
+        if (changed) updateBattleUI();
+    }, TICK);
 }
 
 // Stops the bots' scoring interval. Must be called whenever we leave a bots
