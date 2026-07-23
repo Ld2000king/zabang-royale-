@@ -2431,3 +2431,16 @@
 @media (prefers-reduced-motion: reduce) {
     .daily-fab { animation: none; }
 }
+
+/* "בונוס התחברות" entry in the hamburger menu - stands out gold, with icon */
+.menu-link-daily {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(160deg, rgba(255, 210, 77, 0.18), rgba(255, 138, 30, 0.1));
+    border-color: rgba(255, 210, 77, 0.35) !important;
+    color: #FFD24D;
+}
+.menu-link-daily svg { width: 20px; height: 20px; flex-shrink: 0; }
+.menu-link-daily:hover { background: linear-gradient(160deg, rgba(255, 210, 77, 0.28), rgba(255, 138, 30, 0.16)); }
