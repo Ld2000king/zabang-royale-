@@ -2884,8 +2884,7 @@
 }
 
 #homeScreen .player-card,
-#homeScreen .arena-banner,
-#homeScreen .theme-selector {
+#homeScreen .arena-banner {
     display: none;
 }
 
@@ -3027,4 +3026,190 @@
     }
     #homeScreen .home-menu-icon { width: 50px; height: 50px; }
     #homeScreen .home-menu-icon svg { width: 40px; height: 40px; }
+}
+
+
+/* ===== Home menu refinement: quieter button backing + Cities control ===== */
+#homeScreen .home-menu-buttons .mega-btn::before {
+    inset: -4px -3px auto;
+    height: 10px;
+    border-width: 2px;
+    opacity: .42;
+    border-radius: 14px 14px 5px 5px;
+}
+
+#homeScreen .home-menu-buttons .mega-btn {
+    box-shadow:
+        0 0 0 3px #9b653b,
+        0 0 0 6px #5a341b,
+        inset 0 4px 0 rgba(255,255,255,.68),
+        inset 0 -4px 0 rgba(174,111,52,.14),
+        0 6px 0 rgba(74,42,20,.25),
+        0 11px 18px rgba(60,41,21,.18);
+}
+
+#homeScreen .home-menu-buttons .mega-btn:hover {
+    box-shadow:
+        0 0 0 3px #a96e42,
+        0 0 0 6px #5a341b,
+        inset 0 4px 0 rgba(255,255,255,.72),
+        0 8px 0 rgba(74,42,20,.22),
+        0 14px 22px rgba(60,41,21,.2);
+}
+
+/* Make the home scene calmer so the controls, not the decorative backdrop,
+   carry the visual weight. */
+#homeScreen::before,
+#homeScreen::after {
+    opacity: .48;
+    filter: saturate(.82) blur(.25px) drop-shadow(0 6px 8px rgba(35,73,49,.12));
+}
+
+#homeScreen {
+    background:
+        linear-gradient(rgba(245,250,246,.10), rgba(245,250,246,.10)),
+        radial-gradient(ellipse at 82% 22%, rgba(248,224,176,.68) 0 8%, transparent 8.4%),
+        radial-gradient(ellipse at 88% 27%, rgba(234,200,141,.66) 0 11%, transparent 11.5%),
+        radial-gradient(ellipse at 72% 31%, rgba(84,126,91,.22) 0 10%, transparent 10.5%),
+        linear-gradient(to bottom, #69c0f2 0%, #addff7 39%, #55bfda 40%, #45b2cf 63%, #dcc694 64%, #f1ddb0 100%);
+}
+
+/* Premium ranking emblem: trophy framed by a laurel wreath. */
+#homeScreen .purple-btn .home-menu-icon {
+    width: 66px;
+    height: 66px;
+    background: radial-gradient(circle, rgba(255,249,219,.92) 0 54%, rgba(255,226,128,.62) 55% 69%, transparent 70%);
+}
+#homeScreen .purple-btn .ranking-emblem {
+    width: 56px;
+    height: 56px;
+    filter: drop-shadow(0 3px 0 rgba(86,48,22,.18));
+}
+
+/* Cities is a fifth home control, but expands in place instead of navigating
+   away, keeping the existing themeSelect/onThemeSelect logic intact. */
+#homeScreen .city-picker {
+    width: min(88vw,455px);
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+}
+#homeScreen .city-picker > summary {
+    list-style: none;
+}
+#homeScreen .city-picker > summary::-webkit-details-marker {
+    display: none;
+}
+#homeScreen .city-btn {
+    --menu-accent: #d96e42;
+    width: 100%;
+    min-height: 78px;
+    display: grid;
+    grid-template-columns: 76px 1fr 76px;
+    align-items: center;
+    padding: 10px 18px;
+    direction: ltr;
+    background: linear-gradient(#fff8df 0%, #f8e7bc 60%, #ecd095 100%);
+    color: #9b4b2d;
+    border: 4px solid #4d2d16;
+    border-radius: 27px 30px 25px 29px;
+    cursor: pointer;
+    box-shadow:
+        0 0 0 3px #9b653b,
+        0 0 0 6px #5a341b,
+        inset 0 4px 0 rgba(255,255,255,.68),
+        0 6px 0 rgba(74,42,20,.25),
+        0 11px 18px rgba(60,41,21,.18);
+    text-shadow: none;
+}
+#homeScreen .city-btn::before {
+    content: "";
+    position: absolute;
+    inset: -4px -3px auto;
+    height: 10px;
+    border: 2px solid #58341d;
+    border-radius: 14px 14px 5px 5px;
+    background: #d96e42;
+    opacity: .42;
+}
+#homeScreen .city-btn::after {
+    display: none;
+}
+#homeScreen .city-btn .home-menu-icon {
+    grid-column: 1;
+    color: #d96e42;
+}
+#homeScreen .city-btn .home-menu-label {
+    grid-column: 2;
+}
+#homeScreen .city-chevron {
+    grid-column: 3;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #744125;
+    line-height: 1;
+    transform: translateY(-2px);
+    transition: transform .18s ease;
+}
+#homeScreen .city-picker[open] .city-chevron {
+    transform: rotate(180deg) translateY(2px);
+}
+
+#homeScreen .city-picker-panel {
+    margin: 11px 8px 2px;
+    padding: 15px 16px 13px;
+    border: 3px solid #5a341b;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,249,229,.98), rgba(242,221,176,.98));
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.7), 0 7px 14px rgba(74,42,20,.17);
+    animation: cityPanelIn .18s ease-out;
+}
+@keyframes cityPanelIn {
+    from { opacity: 0; transform: translateY(-5px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+#homeScreen .city-picker-heading {
+    color: #5a341b;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+#homeScreen .city-picker .theme-selector {
+    display: flex;
+    margin: 0;
+    gap: 9px;
+    color: #694326;
+    text-shadow: none;
+    flex-wrap: wrap;
+}
+#homeScreen .city-picker .theme-selector label {
+    font-size: .9rem;
+    font-weight: 800;
+}
+#homeScreen .city-picker .theme-selector select {
+    min-width: 190px;
+    max-width: 100%;
+    padding: 10px 13px;
+    border-radius: 13px;
+    border: 3px solid #744522;
+    background: #fff7df;
+    color: #4e3116;
+    box-shadow: inset 0 2px 0 #fff, 0 3px 0 #b1783f;
+}
+#homeScreen .city-picker-note {
+    margin: 9px 0 0;
+    color: #8a6746;
+    font-size: .78rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+@media (max-height: 820px) {
+    #homeScreen .city-btn { min-height: 66px; }
+    #homeScreen .city-picker-panel { padding: 11px 12px 10px; }
+}
+@media (max-width: 380px) {
+    #homeScreen .city-picker { width: 86vw; }
+    #homeScreen .city-btn { grid-template-columns: 60px 1fr 60px; padding-inline: 12px; }
 }
