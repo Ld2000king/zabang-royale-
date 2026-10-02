@@ -91,16 +91,43 @@
                     </button>
                     <button class="mega-btn purple-btn" onclick="showLeaderboard()">
                         <span class="home-menu-icon icon" aria-hidden="true">
-                            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M8 35 L7 16 L18 24 L24 9 L30 24 L41 16 L40 35 Z" fill="#ffc928" stroke="#7c4a15" stroke-width="3" stroke-linejoin="round"/><path d="M13 35 H35 L33 42 H15 Z" fill="#e79a12" stroke="#7c4a15" stroke-width="3" stroke-linejoin="round"/><path d="M24 16 L29 23 L24 30 L19 23 Z" fill="#7f46c7"/></svg>
+                            <svg class="ranking-emblem" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M14 43 C6 36 6 23 13 15" fill="none" stroke="#d9a51f" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M42 43 C50 36 50 23 43 15" fill="none" stroke="#d9a51f" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M12 37 L7 35 M11 30 L6 27 M13 23 L9 19 M44 37 L49 35 M45 30 L50 27 M43 23 L47 19" fill="none" stroke="#f3c84d" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M19 12 H37 V23 C37 31 33 35 28 35 C23 35 19 31 19 23 Z" fill="#ffc928" stroke="#754318" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="M19 15 H12 V20 C12 25 15 28 20 28 M37 15 H44 V20 C44 25 41 28 36 28" fill="none" stroke="#754318" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M28 35 V42 M21 47 H35 M23 42 H33 L35 47 H21 Z" fill="#e59b19" stroke="#754318" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="M28 16 L31 21 L28 26 L25 21 Z" fill="#8b52c7"/>
+                            </svg>
                         </span>
                         <span class="home-menu-label">דירוג</span><span class="home-menu-spacer" aria-hidden="true"></span>
                     </button>
                 </div>
 
-                <div class="theme-selector">
-                    <label for="themeSelect">לוח מועדף:</label>
-                    <select id="themeSelect" onchange="onThemeSelect(this.value)"></select>
-                </div>
+                <details class="city-picker">
+                    <summary class="mega-btn city-btn">
+                        <span class="home-menu-icon icon" aria-hidden="true">
+                            <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 46 V24 L22 17 V46 Z" fill="#e9bc69" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="M22 46 V12 L36 19 V46 Z" fill="#f4d58a" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="M36 46 V26 L47 21 V46 Z" fill="#dca85a" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="M14 29 H18 M14 36 H18 M27 23 H31 M27 31 H31 M27 39 H31 M40 31 H44 M40 38 H44" stroke="#6b8eb7" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M7 47 H49" stroke="#70431f" stroke-width="4" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <span class="home-menu-label">ערים</span>
+                        <span class="city-chevron" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="city-picker-panel">
+                        <div class="city-picker-heading">בחר לוח לפי עיר</div>
+                        <div class="theme-selector">
+                            <label for="themeSelect">עיר מועדפת</label>
+                            <select id="themeSelect" onchange="onThemeSelect(this.value)"></select>
+                        </div>
+                        <p class="city-picker-note">ערים חדשות נפתחות ככל שמתקדמים בדירוג.</p>
+                    </div>
+                </details>
             </div>
         </div>
 
