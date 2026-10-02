@@ -335,6 +335,12 @@ function collectBoardWords() {
 }
 
 // Initialize
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.getElementById('cityPickerOverlay')?.style.display !== 'none') {
+        closeCityPicker();
+    }
+});
+
 window.addEventListener('load', () => {
     loadGameState();
     normalizeDictionary();
@@ -797,20 +803,74 @@ function updateHomeUI() {
 // themes above the player's current arena are disabled (locked) until the
 // trophy count reaches them.
 function renderThemeSelector() {
-    const sel = document.getElementById('themeSelect');
-    if (!sel) return;
+    const list = document.getElementById('cityPickerList');
+    const current = document.getElementById('cityPickerCurrent');
     const pref = preferredThemeIndex();
-    sel.innerHTML = ARENAS.map((a, i) => {
+
+    if (current) current.textContent = ARENAS[pref]?.name || ARENAS[0].name;
+    if (!list) return;
+
+    list.innerHTML = ARENAS.map((arena, i) => {
         const locked = !isThemeUnlocked(i);
-        return `<option value="${i}"${i === pref ? ' selected' : ''}${locked ? ' disabled' : ''}>${a.motif} ${a.name}${locked ? ' 🔒' : ''}</option>`;
+        const selected = i === pref;
+        const unlockAt = i * TROPHIES_PER_ARENA;
+        const stateText = selected ? 'נבחר' : locked ? `נפתח ב-${unlockAt} גביעים` : 'זמין';
+        const classes = ['city-card'];
+        if (selected) classes.push('selected');
+        if (locked) classes.push('locked');
+
+        return `
+            <button class="${classes.join(' ')}"
+                    type="button"
+                    ${locked ? 'disabled' : `onclick="selectCityTheme(${i})"`}
+                    aria-pressed="${selected ? 'true' : 'false'}">
+                <span class="city-card-motif" aria-hidden="true">${arena.motif}</span>
+                <span class="city-card-copy">
+                    <strong>${arena.name}</strong>
+                    <small>${arena.tagline}</small>
+                </span>
+                <span class="city-card-state">${stateText}</span>
+            </button>`;
     }).join('');
 }
 
-function onThemeSelect(value) {
-    const idx = parseInt(value, 10);
-    if (isNaN(idx) || !isThemeUnlocked(idx)) { renderThemeSelector(); return; }
+function selectCityTheme(index) {
+    const idx = parseInt(index, 10);
+    if (isNaN(idx) || !isThemeUnlocked(idx)) {
+        renderThemeSelector();
+        return;
+    }
+
     gameState.preferredTheme = idx;
     saveGameState();
+    renderThemeSelector();
+
+    const chosen = document.querySelector('.city-card.selected');
+    if (chosen && typeof chosen.animate === 'function') {
+        chosen.animate(
+            [{ transform: 'scale(.98)' }, { transform: 'scale(1.025)' }, { transform: 'scale(1)' }],
+            { duration: 260, easing: 'ease-out' }
+        );
+    }
+}
+
+function onThemeSelect(value) {
+    // Backwards-compatible entry point for any older cached markup.
+    selectCityTheme(value);
+}
+
+function openCityPicker() {
+    renderThemeSelector();
+    const overlay = document.getElementById('cityPickerOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    document.body.classList.add('city-picker-open');
+}
+
+function closeCityPicker() {
+    const overlay = document.getElementById('cityPickerOverlay');
+    if (overlay) overlay.style.display = 'none';
+    document.body.classList.remove('city-picker-open');
 }
 
 // Navigation
