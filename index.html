@@ -103,31 +103,51 @@
                         </span>
                         <span class="home-menu-label">דירוג</span><span class="home-menu-spacer" aria-hidden="true"></span>
                     </button>
-                </div>
+                <button class="mega-btn city-home-btn" onclick="openCityPicker()">
+                    <span class="home-menu-icon icon" aria-hidden="true">
+                        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 46 V24 L22 17 V46 Z" fill="#e9bc69" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M22 46 V12 L36 19 V46 Z" fill="#f4d58a" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M36 46 V26 L47 21 V46 Z" fill="#dca85a" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M14 29 H18 M14 36 H18 M27 23 H31 M27 31 H31 M27 39 H31 M40 31 H44 M40 38 H44" stroke="#6b8eb7" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M7 47 H49" stroke="#70431f" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="home-menu-label">ערים</span><span class="home-menu-spacer" aria-hidden="true"></span>
+                </button>
+            </div>
 
-                <details class="city-picker">
-                    <summary class="mega-btn city-btn">
-                        <span class="home-menu-icon icon" aria-hidden="true">
-                            <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 46 V24 L22 17 V46 Z" fill="#e9bc69" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
-                                <path d="M22 46 V12 L36 19 V46 Z" fill="#f4d58a" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
-                                <path d="M36 46 V26 L47 21 V46 Z" fill="#dca85a" stroke="#70431f" stroke-width="3" stroke-linejoin="round"/>
-                                <path d="M14 29 H18 M14 36 H18 M27 23 H31 M27 31 H31 M27 39 H31 M40 31 H44 M40 38 H44" stroke="#6b8eb7" stroke-width="3" stroke-linecap="round"/>
-                                <path d="M7 47 H49" stroke="#70431f" stroke-width="4" stroke-linecap="round"/>
+            <div id="cityPickerOverlay" class="city-overlay" style="display:none" onclick="if(event.target===this) closeCityPicker()">
+                <section class="city-modal" role="dialog" aria-modal="true" aria-labelledby="cityPickerTitle">
+                    <button class="city-modal-close" onclick="closeCityPicker()" aria-label="סגור">×</button>
+                    <div class="city-modal-head">
+                        <div class="city-modal-map" aria-hidden="true">
+                            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 49 V27 L24 19 V49 Z" fill="#e7b764" stroke="#69401f" stroke-width="3"/>
+                                <path d="M24 49 V13 L40 21 V49 Z" fill="#f3d486" stroke="#69401f" stroke-width="3"/>
+                                <path d="M40 49 V30 L53 24 V49 Z" fill="#d99f4d" stroke="#69401f" stroke-width="3"/>
+                                <path d="M8 50 H55" stroke="#69401f" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M15 31 H19 M15 38 H19 M29 25 H34 M29 33 H34 M29 41 H34 M45 34 H49 M45 41 H49" stroke="#5e8bb5" stroke-width="3" stroke-linecap="round"/>
                             </svg>
-                        </span>
-                        <span class="home-menu-label">ערים</span>
-                        <span class="city-chevron" aria-hidden="true">⌄</span>
-                    </summary>
-                    <div class="city-picker-panel">
-                        <div class="city-picker-heading">בחר לוח לפי עיר</div>
-                        <div class="theme-selector">
-                            <label for="themeSelect">עיר מועדפת</label>
-                            <select id="themeSelect" onchange="onThemeSelect(this.value)"></select>
                         </div>
-                        <p class="city-picker-note">ערים חדשות נפתחות ככל שמתקדמים בדירוג.</p>
+                        <div>
+                            <h2 id="cityPickerTitle">ערי זבאנג</h2>
+                            <p>בחר את העיר שתעצב את לוח המשחק שלך</p>
+                        </div>
                     </div>
-                </details>
+
+                    <div class="city-current-strip">
+                        <span>הלוח הנבחר</span>
+                        <strong id="cityPickerCurrent">מזכרת בתיה</strong>
+                    </div>
+
+                    <div id="cityPickerList" class="city-grid" aria-live="polite"></div>
+
+                    <p class="city-modal-note">
+                        ערים נעולות נפתחות אוטומטית ככל שצוברים גביעים ומתקדמים בדירוג.
+                    </p>
+                </section>
+            </div>
             </div>
         </div>
 
